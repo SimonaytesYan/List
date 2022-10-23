@@ -195,11 +195,28 @@ int ListPop(List* list, int index)
 {
     ReturnIfError(ListCheck(list));
 
-    CHECK(index >= list->size || index <= 0, "Error index", -1);
+    CHECK(index > list->capacity || index <= 0, "Error index", -1);
     
     int next_ind = list->data[index].next;
     int prev_ind = list->data[index].prev;
+    
+    if (list->size == 1)
+    {
+        list->H = 0;
+        list->T = 0;
+    }
+    else if (index == list->H)
+    {
+        list->data[next_ind].prev = 0;
 
+        list->H = next_ind;
+    }
+    else if (index == list->T)
+    {
+        list->data[prev_ind].next = 0;
+
+        list->T = prev_ind;
+    }
     if (index != list->H && index != list->T)
     {
         list->data[next_ind].prev = prev_ind;
@@ -219,7 +236,7 @@ int ListInsert(List* list, int value, int after_which, int* index)
 {
     ReturnIfError(ListCheck(list));
 
-    CHECK(after_which > list->size || after_which < 0, "Error index", -1);
+    CHECK(after_which > list->capacity || after_which < 0, "Error index", -1);
 
     int free_elem_index = -1;
     ReturnIfError(FindFree(list, &free_elem_index));
@@ -228,44 +245,40 @@ int ListInsert(List* list, int value, int after_which, int* index)
 
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
-
-    if (after_which != -1)
+    
+    if (list->size == 0)
     {
-        if (list->size == 0)
-        {
-            new_elem->prev = 0;
-            new_elem->next = 0;
+        new_elem->prev = 0;
+        new_elem->next = 0;
 
-            list->H        = 1;
-            list->T        = 1;
-        }
-        else if (after_which == 0)
-        {
-            new_elem->prev = 0;
-            new_elem->next = list->H;
+        list->H        = 1;
+        list->T        = 1;
+    }
+    else if (after_which == 0)
+    {
+        new_elem->prev = 0;
+        new_elem->next = list->H;
 
-            list->data[list->H].prev = free_elem_index;
-            list->H = free_elem_index; 
-        }
-        else if (after_which == list->T)
-        {
-            new_elem->next = 0;
-            new_elem->prev = list->T;
+        list->data[list->H].prev = free_elem_index;
+        list->H = free_elem_index; 
+    }
+    else if (after_which == list->T)
+    {
+        new_elem->next = 0;
+        new_elem->prev = list->T;
 
-            list->data[list->T].next = free_elem_index;
-            list->T = free_elem_index;
-        }
-        else if (after_which != list->H && after_which != list->T)
-        {
-            int next       = list->data[after_which].next;
-            new_elem->next = next;
-            new_elem->prev = after_which;
+        list->data[list->T].next = free_elem_index;
+        list->T = free_elem_index;
+    }
+      else if (after_which != list->H && after_which != list->T)
+    {
+        int next       = list->data[after_which].next;
+        new_elem->next = next;
+        new_elem->prev = after_which;
 
-            list->data[next].prev        = free_elem_index; 
-            list->data[after_which].next = free_elem_index;
-        }
-    }    
-
+        list->data[next].prev        = free_elem_index; 
+        list->data[after_which].next = free_elem_index;
+    }
     list->size++;
     return 0;
 }

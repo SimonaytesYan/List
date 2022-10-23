@@ -27,6 +27,19 @@ int main()
 
     DUMP_L(&list);
 
+    
+    ListPop(&list, 1);
+
+    DUMP_L(&list);
+
+    ListPop(&list, 2);
+
+    DUMP_L(&list);
+    
+    ListPop(&list, 3);
+
+    DUMP_L(&list);
+
     ListDtor(&list);
 
     CloseLogFile();
