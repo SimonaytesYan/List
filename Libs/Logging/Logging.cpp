@@ -28,7 +28,7 @@ int CloseLogFile()
     return 0;
 }
 
-int ParseErrorCode(int error)
+void ParseErrorCode(int error)
 {
     for(int i = 0; i < ERRORS_NUMBER; i++)
     {
@@ -37,6 +37,7 @@ int ParseErrorCode(int error)
             LogPrintf(ERROR_DESCRIPTION[i]);
         }
     }
+    LogPrintf("\n");
 }
 
 int LogPrintf(const char *format, ...)

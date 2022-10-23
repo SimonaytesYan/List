@@ -34,9 +34,60 @@ typedef struct List {
     LogInfo   debug    = {};
 }List;
 
-int ListCheck(List* list);
-int ListConstructor(List* list, int capacity, int line, const char* name, const char* function, const char* file);
-int ListDtor(List* list);
+int  ListCheck(List* list);
+int  ListConstructor(List* list, int capacity, int line, const char* name, const char* function, const char* file);
+int  ListDtor(List* list);
+void DumpList(List* list, const char* function, const char* file, int line);
+
+#define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
+
+void DumpList(List* list, const char* function, const char* file, int line)
+{
+    LogPrintf("Dump in %s(%d) in function %s\n", file, line, function);
+
+    int errors = ListCheck(list); 
+    if (errors != 0)
+        ParseErrorCode(errors);
+    
+    if (list == nullptr || list == POISON_PTR) 
+        return;
+
+    LogPrintf("Stack[%p] \"%s\" created at %s at %s(%d):\n", 
+                    list, list->debug.name, list->debug.function, list->debug.file, list->debug.line);
+
+    LogPrintf("Status: ");
+    if (list->debug.status)
+        LogPrintf("enable\n");
+    else
+        LogPrintf("disable\n");
+
+    LogPrintf("{\n");
+    LogPrintf("\tsize     = %zu\n", list->size);
+    LogPrintf("\tcapacity = %zu\n", list->capacity);
+    LogPrintf("\thead     = %zu\n", list->H);
+    LogPrintf("\ttail     = %zu\n", list->T);
+
+    if (list->data != nullptr && list->data != POISON_PTR)
+    {
+        LogPrintf("\n\tdata:\t");
+        for(int i = 0; i < list->capacity; i++)
+            LogPrintf("|%d\t", list->data[i].val);
+        LogPrintf("\n");
+        
+        LogPrintf("\tnext:\t");
+        for(int i = 0; i < list->capacity; i++)
+            LogPrintf("|%d\t", list->data[i].val);
+        LogPrintf("\n");
+        
+        LogPrintf("\tprev:\t");
+        for(int i = 0; i < list->capacity; i++)
+            LogPrintf("|%d\t", list->data[i].val);
+        LogPrintf("\n");
+    }
+
+
+    LogPrintf("}\n");
+}
 
 int ListCheck(List* list)
 {
@@ -60,6 +111,9 @@ int ListCheck(List* list)
             list->debug.name     == POISON_PTR) error |= DEBUG_NAME_DAMAGED;
         if (list->debug.line     == POISON)     error |= DEBUG_LINE_DAMAGED;
     }
+
+    CHECK(error != 0, error);
+    
     return error;
 }
 

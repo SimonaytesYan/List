@@ -15,10 +15,7 @@ int main()
     List list = {};
     ListCtor(&list, 10);
 
-    list.data = nullptr;
-    ListCheck(&list);
-    ListCheck(nullptr);
-    ListCheck((List*)POISON_PTR);
+    DUMP_L(&list);
 
     ListDtor(&list);
 

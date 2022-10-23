@@ -3,13 +3,13 @@
 
 #include <stdio.h>
 
-int OpenLogFile(const char* file_name);
+int  OpenLogFile(const char* file_name);
 
-int CloseLogFile();
+int  CloseLogFile();
 
-int ParseErrorCode(int error);
+void ParseErrorCode(int error);
 
-int LogPrintf(const char *format, ...);
+int  LogPrintf(const char *format, ...);
 
 #define CHECK(cond, return_code)                                                               \
     if (cond)                                                                                  \
