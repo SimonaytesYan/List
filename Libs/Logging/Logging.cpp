@@ -7,6 +7,18 @@
 
 FILE* logs_file = nullptr;
 
+int  OpenHtmlLogFile(const char* file_name)
+{
+    OpenHtmlLogFile(file_name);
+    LogPrintf("<html>\n");
+}
+
+int  CloseHtmlLogFile()
+{
+    LogPrintf("</html>\n");
+    CloseLogFile();
+}
+
 int OpenLogFile(const char* file_name)
 {
     logs_file = fopen(file_name, "w");
@@ -21,9 +33,8 @@ int OpenLogFile(const char* file_name)
 int CloseLogFile()
 {
     if (logs_file == nullptr)
-    {
         return -1;
-    }
+
     fclose(logs_file);
     return 0;
 }

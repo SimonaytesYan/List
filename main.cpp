@@ -4,7 +4,7 @@ typedef int ListElem_t;
 #include "List\List.h"
 #include "Libs\Logging\Logging.h"
 
-const char logs[] = "ListLogs.log";
+const char logs[] = "ListLogs.html";
 
 #define DEBUG
 

@@ -35,11 +35,12 @@ typedef struct List {
 }List;
 
 int  ListCheck(List* list);
-int  ListConstructor(List* list, int capacity, int line, const char* name, const char* function, const char* file);
-int  ListDtor(List* list);
-void DumpList(List* list, const char* function, const char* file, int line);
 
-//TODO: html dump, для равнения
+int  ListConstructor(List* list, int capacity, int line, const char* name, const char* function, const char* file);
+
+int  ListDtor(List* list);
+
+void DumpList(List* list, const char* function, const char* file, int line);
 
 //!---------------------
 //!@param [in]  list        List for inserting an element
@@ -52,6 +53,7 @@ void DumpList(List* list, const char* function, const char* file, int line);
 int ListInsert(List* list, int value, int after_which, int* index = nullptr);
 
 int  ListPop(List* list, int index);
+
 int  FindFree(List* list, int* index);
 
 #define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
@@ -196,10 +198,12 @@ int ListPop(List* list, int index)
     ReturnIfError(ListCheck(list));
 
     CHECK(index > list->capacity || index <= 0, "Error index", -1);
-    
+
     int next_ind = list->data[index].next;
     int prev_ind = list->data[index].prev;
-    
+
+    CHECK(next_ind == -1 || prev_ind == -1, "Index to not inserted element", -1);
+
     if (list->size == 1)
     {
         list->H = 0;
@@ -237,6 +241,8 @@ int ListInsert(List* list, int value, int after_which, int* index)
     ReturnIfError(ListCheck(list));
 
     CHECK(after_which > list->capacity || after_which < 0, "Error index", -1);
+    
+    CHECK(list->data[after_which].next == -1 || list->data[after_which].prev == -1, "Index to not inserted element", -1);
 
     int free_elem_index = -1;
     ReturnIfError(FindFree(list, &free_elem_index));
