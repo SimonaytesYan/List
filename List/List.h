@@ -226,13 +226,36 @@ int ListInsert(List* list, int value, int after_which, int* index)
     if (index != nullptr && index != POISON_PTR)
         *index = free_elem_index;
 
-    list->size++;
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
 
-    if (after_which != -1 && after_which != list->H && after_which != list->T)
+    if (after_which != -1)
     {
-        if (after_which != list->H && after_which != list->T)
+        if (list->size == 0)
+        {
+            new_elem->prev = 0;
+            new_elem->next = 0;
+
+            list->H        = 1;
+            list->T        = 1;
+        }
+        else if (after_which == 0)
+        {
+            new_elem->prev = 0;
+            new_elem->next = list->H;
+
+            list->data[list->H].prev = free_elem_index;
+            list->H = free_elem_index; 
+        }
+        else if (after_which == list->T)
+        {
+            new_elem->next = 0;
+            new_elem->prev = list->T;
+
+            list->data[list->T].next = free_elem_index;
+            list->T = free_elem_index;
+        }
+        else if (after_which != list->H && after_which != list->T)
         {
             int next       = list->data[after_which].next;
             new_elem->next = next;
@@ -243,6 +266,7 @@ int ListInsert(List* list, int value, int after_which, int* index)
         }
     }    
 
+    list->size++;
     return 0;
 }
 
