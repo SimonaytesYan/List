@@ -6,6 +6,8 @@ typedef int ListElem_t;
 
 const char logs[] = "ListLogs.log";
 
+#define DEBUG
+
 int main()
 {
     OpenLogFile(logs);
