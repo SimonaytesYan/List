@@ -15,6 +15,8 @@ int main()
     List list = {};
     ListCtor(&list, 10);
 
+    ListInsert(&list, 100, 2);
+
     DUMP_L(&list);
 
     ListDtor(&list);

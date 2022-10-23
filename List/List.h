@@ -39,7 +39,26 @@ int  ListConstructor(List* list, int capacity, int line, const char* name, const
 int  ListDtor(List* list);
 void DumpList(List* list, const char* function, const char* file, int line);
 
+//!---------------------
+//!@param [in] list  List for inserting an element
+//!@param [in] val   Value of new element
+//!@param [in] index (optional)Index of element after which put new element. If index not specified or equal to -1 element will insert to the end of list
+//!@return           Error code according to Errors.h
+//!
+//!---------------------
+int  ListInsert(List* list, int value, int index = -1);
+
+int  ListPop(List* list, int index);
+int  FindFree(List* list, int* index);
+
 #define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
+
+#define ReturnIfError(func)                 \
+    {                                       \
+        int error = func;                   \
+        if (error != NO_ERROR)              \
+            return error;                   \
+    }
 
 void DumpList(List* list, const char* function, const char* file, int line)
 {
@@ -76,15 +95,14 @@ void DumpList(List* list, const char* function, const char* file, int line)
         
         LogPrintf("\tnext:\t");
         for(int i = 0; i < list->capacity; i++)
-            LogPrintf("|%d\t", list->data[i].val);
+            LogPrintf("|%d\t", list->data[i].next);
         LogPrintf("\n");
         
         LogPrintf("\tprev:\t");
         for(int i = 0; i < list->capacity; i++)
-            LogPrintf("|%d\t", list->data[i].val);
+            LogPrintf("|%d\t", list->data[i].prev);
         LogPrintf("\n");
     }
-
 
     LogPrintf("}\n");
 }
@@ -127,12 +145,19 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     list->capacity = capacity;
     list->H        = 0;
     list->T        = 0;
-    list->data     = (ListElem*)calloc(capacity, sizeof(ListElem));
+    list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
+    if (list->data != nullptr)
+        for(int i = 1; i < list->capacity; i++)
+        {
+            list->data[i].prev = -1;
+            list->data[i].next = -1;
+        }
 
     list->debug.name     = name;
     list->debug.function = function;
     list->debug.file     = file;
     list->debug.line     = line;
+    list->debug.status   = true;
 
     return ListCheck(list);
 }
@@ -153,6 +178,46 @@ int ListDtor(List* list)
     list->debug.function = (const char*)POISON_PTR;
     list->debug.name     = (const char*)POISON_PTR;
     list->debug.line     = POISON;
+    return 0;
+}
+
+int FindFree(List* list, int* index)
+{
+    ReturnIfError(ListCheck(list));
+
+    for(int i = 0; i < list->capacity; i++)
+        if (list->data[i].next == -1)
+        {
+            *index = i;
+            return 0;
+        }
+
+    LogPrintf("Free element not found");
+    return -1;
+}
+
+int  ListInsert(List* list, int value, int index)
+{
+    ReturnIfError(ListCheck(list));
+
+    int free_elem_index = -1;
+    ReturnIfError(FindFree(list, &free_elem_index));
+
+    ListElem* new_elem = &list->data[free_elem_index];
+    new_elem->val = value;
+
+    if (index != -1 && index != list->H && index != list->T)
+    {
+        if (index != list->H && index != list->T)
+        {
+            int next = list->data[index].next;
+            new_elem->next = next;
+
+            list->data[next].prev  = free_elem_index; 
+            list->data[index].next = free_elem_index;
+        }
+    }    
+
     return 0;
 }
 
