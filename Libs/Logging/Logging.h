@@ -11,7 +11,15 @@ void ParseErrorCode(int error);
 
 int  LogPrintf(const char *format, ...);
 
-#define CHECK(cond, return_code)                                                               \
+#define CHECK(cond, msg, return_code)                                                           \
+    if (cond)                                                                                   \
+    {                                                                                           \
+        LogPrintf("In %s in %s(%d)\n", __PRETTY_FUNCTION__ , __FILE__, __LINE__);               \
+        LogPrintf("%s\n", msg);                                                                 \
+        return return_code;                                                                     \
+    }
+
+#define LogAndParseErr(cond, return_code)                                                      \
     if (cond)                                                                                  \
     {                                                                                          \
         LogPrintf("In %s in %s(%d)\n", __PRETTY_FUNCTION__ , __FILE__, __LINE__);              \

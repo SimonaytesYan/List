@@ -11,9 +11,9 @@ const ListElem_t  POISON     = 0X7FFFFFFF;
 
 typedef struct ListElem 
 {
+    ListElem_t val  = 0;
     int        next = -1;
     int        prev = -1;
-    ListElem_t val  = 0;
 } ListElem;
 
 typedef struct LogInfo 
@@ -39,14 +39,17 @@ int  ListConstructor(List* list, int capacity, int line, const char* name, const
 int  ListDtor(List* list);
 void DumpList(List* list, const char* function, const char* file, int line);
 
+//TODO: html dump, для равнения
+
 //!---------------------
-//!@param [in] list  List for inserting an element
-//!@param [in] val   Value of new element
-//!@param [in] index (optional)Index of element after which put new element. If index not specified or equal to -1 element will insert to the end of list
-//!@return           Error code according to Errors.h
+//!@param [in]  list        List for inserting an element
+//!@param [in]  val         Value of new element
+//!@param [in]  after_which Index of element after which put new element
+//!@param [out] index       (Optional).Index in which new element will insert
+//!@return Error code according to Errors.h
 //!
 //!---------------------
-int  ListInsert(List* list, int value, int index = -1);
+int ListInsert(List* list, int value, int after_which, int* index = nullptr);
 
 int  ListPop(List* list, int index);
 int  FindFree(List* list, int* index);
@@ -62,7 +65,7 @@ int  FindFree(List* list, int* index);
 
 void DumpList(List* list, const char* function, const char* file, int line)
 {
-    LogPrintf("Dump in %s(%d) in function %s\n", file, line, function);
+    LogPrintf("\nDump in %s(%d) in function %s\n", file, line, function);
 
     int errors = ListCheck(list); 
     if (errors != 0)
@@ -88,23 +91,14 @@ void DumpList(List* list, const char* function, const char* file, int line)
 
     if (list->data != nullptr && list->data != POISON_PTR)
     {
-        LogPrintf("\n\tdata:\t");
-        for(int i = 0; i < list->capacity; i++)
-            LogPrintf("|%d\t", list->data[i].val);
-        LogPrintf("\n");
         
-        LogPrintf("\tnext:\t");
+        LogPrintf("\n\tdata:\t next:\t prev:\n");
         for(int i = 0; i < list->capacity; i++)
-            LogPrintf("|%d\t", list->data[i].next);
-        LogPrintf("\n");
-        
-        LogPrintf("\tprev:\t");
-        for(int i = 0; i < list->capacity; i++)
-            LogPrintf("|%d\t", list->data[i].prev);
+            LogPrintf("\t|%d|\t\t|%d|\t\t|%d|\n", list->data[i].val, list->data[i].next, list->data[i].prev);
         LogPrintf("\n");
     }
 
-    LogPrintf("}\n");
+    LogPrintf("}\n\n");
 }
 
 int ListCheck(List* list)
@@ -130,7 +124,7 @@ int ListCheck(List* list)
         if (list->debug.line     == POISON)     error |= DEBUG_LINE_DAMAGED;
     }
 
-    CHECK(error != 0, error);
+    LogAndParseErr(error != 0, error);
     
     return error;
 }
@@ -139,7 +133,7 @@ int ListCheck(List* list)
 
 int ListConstructor(List* list, int capacity, int line, const char* name, const char* function, const char* file)
 {
-    CHECK(list == nullptr, NULL_LIST_POINTER);
+    LogAndParseErr(list == nullptr, NULL_LIST_POINTER);
 
     list->size     = 0;
     list->capacity = capacity;
@@ -147,8 +141,9 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     list->T        = 0;
     list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
     if (list->data != nullptr)
-        for(int i = 1; i < list->capacity; i++)
+        for(int i = 1; i <= list->capacity; i++)
         {
+            list->data[i].val  = POISON;
             list->data[i].prev = -1;
             list->data[i].next = -1;
         }
@@ -192,29 +187,59 @@ int FindFree(List* list, int* index)
             return 0;
         }
 
-    LogPrintf("Free element not found");
+    LogPrintf("Free element not found\n\n");
     return -1;
 }
 
-int  ListInsert(List* list, int value, int index)
+int ListPop(List* list, int index)
 {
     ReturnIfError(ListCheck(list));
 
+    CHECK(index >= list->size || index <= 0, "Error index", -1);
+    
+    int next_ind = list->data[index].next;
+    int prev_ind = list->data[index].prev;
+
+    if (index != list->H && index != list->T)
+    {
+        list->data[next_ind].prev = prev_ind;
+        list->data[prev_ind].next = next_ind;
+    }
+
+    list->data[index].val  = POISON;
+    list->data[index].prev = -1;
+    list->data[index].next = -1;
+
+    list->size--;
+
+    return 0;
+}
+
+int ListInsert(List* list, int value, int after_which, int* index) 
+{
+    ReturnIfError(ListCheck(list));
+
+    CHECK(after_which > list->size || after_which < 0, "Error index", -1);
+
     int free_elem_index = -1;
     ReturnIfError(FindFree(list, &free_elem_index));
+    if (index != nullptr && index != POISON_PTR)
+        *index = free_elem_index;
 
+    list->size++;
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
 
-    if (index != -1 && index != list->H && index != list->T)
+    if (after_which != -1 && after_which != list->H && after_which != list->T)
     {
-        if (index != list->H && index != list->T)
+        if (after_which != list->H && after_which != list->T)
         {
-            int next = list->data[index].next;
+            int next       = list->data[after_which].next;
             new_elem->next = next;
+            new_elem->prev = after_which;
 
-            list->data[next].prev  = free_elem_index; 
-            list->data[index].next = free_elem_index;
+            list->data[next].prev        = free_elem_index; 
+            list->data[after_which].next = free_elem_index;
         }
     }    
 
