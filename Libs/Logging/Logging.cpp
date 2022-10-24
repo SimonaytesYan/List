@@ -3,21 +3,20 @@
 
 #define LOGS_TO_FILE
 
-#include <stdarg.h>
-
 FILE* logs_file = nullptr;
+
+#include <stdarg.h>
 
 int  OpenHtmlLogFile(const char* file_name)
 {
     ReturnIfError(OpenLogFile(file_name));
-    LogPrintf("<html>\n");
+    LogPrintf("<pre>\n");
     
     return 0;
 }
 
 int  CloseHtmlLogFile()
 {
-    LogPrintf("</html>\n");
     return CloseLogFile();
 }
 

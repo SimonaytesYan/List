@@ -1,8 +1,12 @@
 #include <stdio.h>
 
 typedef int ListElem_t;
-#include "List\List.h"
+
 #include "Libs\Logging\Logging.h"
+
+void PrintElemInLog(ListElem_t val);
+
+#include "List\List.h"
 
 const char logs[] = "ListLogs.html";
 
@@ -18,10 +22,16 @@ int main()
     ListCtor(&list, 0);
 
     ListInsert(&list, 100, 0);
-    ListDtor(&list);
+    ListInsert(&list, 100, 1);
+    ListInsert(&list, 100, 2);
 
     DUMP_L(&list);
 
     printf("End\n");
     CloseHtmlLogFile();
+}
+
+void PrintElemInLog(ListElem_t val)
+{
+    LogPrintf("%10d", val);
 }

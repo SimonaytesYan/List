@@ -29,8 +29,6 @@ typedef struct LogInfo
 typedef struct List {
     size_t    size     = 0;
     size_t    capacity = 0;
-    size_t    H        = 0;   //!<Head
-    size_t    T        = 0;   //!<Tail
     ListElem* data     = nullptr;
     LogInfo   debug    = {};
 }List;
@@ -80,7 +78,6 @@ void DumpList(List* list, const char* function, const char* file, int line)
         LogPrintf("at %s(%d):", list->debug.file);
     LogPrintf("\n");
 
-    printf("Dump\n");
     LogPrintf("Status: ");
     if (list->debug.status)
         LogPrintf("enable\n");
@@ -90,16 +87,27 @@ void DumpList(List* list, const char* function, const char* file, int line)
     LogPrintf("{\n");
     LogPrintf("\tsize     = %zu\n", list->size);
     LogPrintf("\tcapacity = %zu\n", list->capacity);
-    LogPrintf("\thead     = %zu\n", list->H);
-    LogPrintf("\ttail     = %zu\n", list->T);
 
     if (list->data != nullptr && list->data != POISON_PTR)
     {
-        
-        LogPrintf("\n\tdata:\t next:\t prev:\n");
+        LogPrintf("\tdata:");
         for(int i = 0; i <= list->capacity; i++)
-            LogPrintf("\t|%d|\t\t|%d|\t\t|%d|\n", list->data[i].val, list->data[i].next, list->data[i].prev);
-        LogPrintf("\n");
+        {
+            LogPrintf("|");
+            PrintElemInLog(list->data[i].val);
+        }
+        LogPrintf("|");
+
+        LogPrintf("\n\tnext:");
+        for(int i = 0; i <= list->capacity; i++)
+            LogPrintf("|%10d", list->data[i].next);    
+        LogPrintf("|");
+            
+        LogPrintf("\n\tprev:");
+        for(int i = 0; i <= list->capacity; i++)
+            LogPrintf("|%10d", list->data[i].prev);
+            
+        LogPrintf("|\n");
     }
 
     LogPrintf("}\n\n");
@@ -114,8 +122,6 @@ int ListCheck(List* list)
     {
         if (list->size     == POISON)     error |= WRONG_SIZE;
         if (list->capacity == POISON)     error |= WRONG_CAPACITY;
-        if (list->H        == POISON)     error |= WRONG_HEAD;
-        if (list->T        == POISON)     error |= WRONG_TAIL;
         if (list->data     == nullptr || 
             list->data     == POISON_PTR) error |= DAMAGED_DATA; 
         
@@ -141,8 +147,6 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
 
     list->size     = 0;
     list->capacity = capacity;
-    list->H        = 0;
-    list->T        = 0;
     list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
     if (list->data != nullptr)
         for(int i = 1; i <= list->capacity; i++)
@@ -167,8 +171,6 @@ int ListDtor(List* list)
 
     list->capacity = POISON;
     list->size     = POISON;
-    list->H        = POISON;
-    list->T        = POISON;
 
     free(list->data);
     list->data = (ListElem*)POISON_PTR;
@@ -207,28 +209,8 @@ int ListPop(List* list, int index)
 
     CHECK(next_ind == -1 || prev_ind == -1, "Index to not inserted element", -1);
 
-    if (list->size == 1)
-    {
-        list->H = 0;
-        list->T = 0;
-    }
-    else if (index == list->H)
-    {
-        list->data[next_ind].prev = 0;
-
-        list->H = next_ind;
-    }
-    else if (index == list->T)
-    {
-        list->data[prev_ind].next = 0;
-
-        list->T = prev_ind;
-    }
-    if (index != list->H && index != list->T)
-    {
-        list->data[next_ind].prev = prev_ind;
-        list->data[prev_ind].next = next_ind;
-    }
+    list->data[next_ind].prev = prev_ind;
+    list->data[prev_ind].next = next_ind;
 
     list->data[index].val  = POISON;
     list->data[index].prev = -1;
@@ -282,43 +264,13 @@ int ListInsert(List* list, int value, int after_which, int* index)
     
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
-
-    LogPrintf("size      = %d\n", list->size);
-    LogPrintf("free elem = %d\n", free_elem_index);
     
-    if (list->size == 0)
-    {
-        new_elem->prev = 0;
-        new_elem->next = 0;
+    int next       = list->data[after_which].next;
+    new_elem->next = next;
+    new_elem->prev = after_which;
 
-        list->H        = 1;
-        list->T        = 1;
-    }
-    else if (after_which == 0)
-    {
-        new_elem->prev = 0;
-        new_elem->next = list->H;
-
-        list->data[list->H].prev = free_elem_index;
-        list->H = free_elem_index; 
-    }
-    else if (after_which == list->T)
-    {
-        new_elem->next = 0;
-        new_elem->prev = list->T;
-
-        list->data[list->T].next = free_elem_index;
-        list->T = free_elem_index;
-    }
-      else if (after_which != list->H && after_which != list->T)
-    {
-        int next       = list->data[after_which].next;
-        new_elem->next = next;
-        new_elem->prev = after_which;
-
-        list->data[next].prev        = free_elem_index; 
-        list->data[after_which].next = free_elem_index;
-    }
+    list->data[next].prev        = free_elem_index; 
+    list->data[after_which].next = free_elem_index;
 
     list->size++;
 

@@ -1,26 +1,13 @@
-<html>
-size      = 0
-free elem = 1
+<pre>
 
-Dump in main.cpp(23) in function int main()
-In int ListCheck(List*) in List\List.h(131)
-Poisoned size
-Poisoned capacity
-Pointer to data array in list is poison ptr or nullptr
-Poison head
-Poison tail
-Information about file in which list created damaged
-Information about function in which list created damaged
-Information about line in which list created damaged
-Information about name of list damaged
-
-Stack[000000000061FDD0] 
+Dump in main.cpp(28) in function int main()
+Stack[000000000061FDE0] "&list"created at int main() at main.cpp(-410625728):
 Status: enable
 {
-	size     = 2147483647
-	capacity = 2147483647
-	head     = 2147483647
-	tail     = 2147483647
+	size     = 3
+	capacity = 4
+	data:|         0|       100|       100|       100|2147483647|
+	next:|         1|         2|         3|         0|        -1|
+	prev:|         3|         0|         1|         2|        -1|
 }
 
-</html>
