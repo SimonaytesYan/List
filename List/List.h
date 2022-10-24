@@ -65,16 +65,22 @@ void DumpList(List* list, const char* function, const char* file, int line)
 {
     LogPrintf("\nDump in %s(%d) in function %s\n", file, line, function);
 
-    int errors = ListCheck(list); 
-    if (errors != 0)
-        ParseErrorCode(errors);
+    ListCheck(list);
     
     if (list == nullptr || list == POISON_PTR) 
         return;
 
-    LogPrintf("Stack[%p] \"%s\" created at %s at %s(%d):\n", 
-                    list, list->debug.name, list->debug.function, list->debug.file, list->debug.line);
+    LogPrintf("Stack[%p] ", list);
 
+    if (list->debug.name != nullptr && list->debug.name != POISON_PTR)
+        LogPrintf("\"%s\"", list->debug.name);
+    if (list->debug.function != nullptr && list->debug.function != POISON_PTR)
+        LogPrintf("created at %s ", list->debug.function);
+    if (list->debug.file != nullptr && list->debug.file != POISON_PTR)
+        LogPrintf("at %s(%d):", list->debug.file);
+    LogPrintf("\n");
+
+    printf("Dump\n");
     LogPrintf("Status: ");
     if (list->debug.status)
         LogPrintf("enable\n");
@@ -158,7 +164,6 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
 int ListDtor(List* list)
 {
     ListCheck(list);
-    printf("Start dtor\n");
 
     list->capacity = POISON;
     list->size     = POISON;
@@ -173,7 +178,6 @@ int ListDtor(List* list)
     list->debug.name     = (const char*)POISON_PTR;
     list->debug.line     = POISON;
 
-    printf("End dtor\n");
     return 0;
 }
 

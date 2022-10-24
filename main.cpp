@@ -22,31 +22,6 @@ int main()
 
     DUMP_L(&list);
 
-    ListInsert(&list, 200, 0);
-
-    DUMP_L(&list);
-    
-    ListInsert(&list, 300, list.T);
-
-    DUMP_L(&list);
-
-    
-    ListPop(&list, 1);
-
-    DUMP_L(&list);
-
-    ListPop(&list, 2);
-
-    DUMP_L(&list);
-    
-    ListPop(&list, 3);
-
-    DUMP_L(&list);
-
-    ListDtor(&list);
-
-    DUMP_L(&list);
-
-
+    printf("End\n");
     CloseHtmlLogFile();
 }
