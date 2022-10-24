@@ -158,6 +158,7 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
 int ListDtor(List* list)
 {
     ListCheck(list);
+    printf("Start dtor\n");
 
     list->capacity = POISON;
     list->size     = POISON;
@@ -171,6 +172,8 @@ int ListDtor(List* list)
     list->debug.function = (const char*)POISON_PTR;
     list->debug.name     = (const char*)POISON_PTR;
     list->debug.line     = POISON;
+
+    printf("End dtor\n");
     return 0;
 }
 
@@ -236,7 +239,7 @@ int ResizeUp(List* list, int new_capacity)
 {
     ReturnIfError(ListCheck(list));
 
-    realloc(list->data, new_capacity + 1);
+    list->data = (ListElem*)realloc(list->data, sizeof(ListElem)*(new_capacity + 1));
 
     if (list->data == nullptr)
         return MEMORY_ALLOCATION_ERROR;

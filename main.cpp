@@ -18,6 +18,7 @@ int main()
     ListCtor(&list, 0);
 
     ListInsert(&list, 100, 0);
+    ListDtor(&list);
 
     DUMP_L(&list);
 
@@ -43,6 +44,9 @@ int main()
     DUMP_L(&list);
 
     ListDtor(&list);
+
+    DUMP_L(&list);
+
 
     CloseHtmlLogFile();
 }
