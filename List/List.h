@@ -42,6 +42,8 @@ int  ListDtor(List* list);
 
 void DumpList(List* list, const char* function, const char* file, int line);
 
+void GraphicDump(List* list);
+
 //!---------------------
 //!@param [in]  list        List for inserting an element
 //!@param [in]  val         Value of new element
@@ -57,6 +59,74 @@ int ListPop(List* list, int index);
 int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
+
+int counter = 0;
+
+void GraphicDump(List* list)
+{
+    char name[20] = "";
+    sprintf(name, "dump%d", counter);
+    counter++;
+    FILE* fp = fopen(name, "w");
+
+    fprintf(fp, "digraph{\n");
+    fprintf(fp, "rankdir=LR;\n"                                \
+                "node[shape = record, fontsize=14];\n"          \
+                "edge[style = invis, weight = 5]\n");
+
+    if (list == nullptr || list == POISON_PTR) 
+        return;
+    if (list->data == nullptr || list->data == POISON_PTR)
+        return;
+
+    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d\"]", list->size, list->capacity, list->free);
+
+    for(int i = 0; i <= list->capacity; i++)
+    {
+        fprintf(fp, "Node%d[label = \"<v>%d \\n | {<p> %d |<n>  %d}\"]\n", i, list->data[i].val, list->data[i].prev, list->data[i].next);
+        if (i == 0)
+            fprintf(fp, "info:s -> Node0:v:n\n");
+        else 
+            fprintf(fp, "Node%d->Node%d\n", i-1, i);
+    }
+
+    int index = 0;
+    fprintf(fp, "edge [style = solid, color = \"red\", weight = 1]");
+    for(int i = 0; i <= list->size; i++)
+    {
+        int prev = list->data[index].prev;
+        fprintf(fp, "Node%d:<p> -> Node%d\n", index, prev);
+        index = prev;
+    }
+    
+    fprintf(fp, "edge [style = solid, color = \"blue\", weight = 1]\n");
+    index = 0;
+    for(int i = 0; i <= list->size; i++)
+    {
+        int next = list->data[index].next;
+        fprintf(fp, "Node%d:<n> -> Node%d\n", index, next);
+        index = next;
+    }
+
+    fprintf(fp, "edge [style = solid, color = \"black\", weight = 1]\n");
+    index = list->free;
+    if (index != -1)
+    {
+        fprintf(fp, "info:<f> -> Node%d\n", index);
+        for(int i = 0; i <= list->capacity; i++)
+        {
+            int free_ind = list->data[index].prev;
+            if (free_ind == -1)
+                break;
+            fprintf(fp, "Node%d -> Node%d\n", index, free_ind);
+            index = free_ind;
+        }
+    }
+
+    fprintf(fp, "}");
+
+    fclose(fp);
+}
 
 #define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
 

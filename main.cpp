@@ -20,15 +20,20 @@ int main()
 
     List list = {};
     ListCtor(&list, 0);
-    DUMP_L(&list);
 
     ListInsert(&list, 100, 0);
-    DUMP_L(&list);
     ListInsert(&list, 200, 2);
-    DUMP_L(&list);
     ListInsert(&list, 300, 1);
+    ListInsert(&list, 400, 1);
+    ListInsert(&list, 500, 1);
+    ListInsert(&list, 600, 1);
+    ListInsert(&list, 700, 1);
+    ListInsert(&list, 800, 1);
+    ListInsert(&list, 900, 1);
 
-    DUMP_L(&list);
+    GraphicDump(&list);
+
+    system("Dot dump0 -o Test.png -T png");
 
     printf("End\n");
     CloseHtmlLogFile();
