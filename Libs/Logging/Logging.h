@@ -30,5 +30,11 @@ int  LogPrintf(const char *format, ...);
         return return_code;                                                                    \
     }
 
+#define ReturnIfError(func)                 \
+    {                                       \
+        int error = func;                   \
+        if (error != NO_ERROR)              \
+            return error;                   \
+    }
 
 #endif //__LOGGING_SYM__

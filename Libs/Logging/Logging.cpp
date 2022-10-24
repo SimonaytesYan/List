@@ -9,14 +9,16 @@ FILE* logs_file = nullptr;
 
 int  OpenHtmlLogFile(const char* file_name)
 {
-    OpenHtmlLogFile(file_name);
+    ReturnIfError(OpenLogFile(file_name));
     LogPrintf("<html>\n");
+    
+    return 0;
 }
 
 int  CloseHtmlLogFile()
 {
     LogPrintf("</html>\n");
-    CloseLogFile();
+    return CloseLogFile();
 }
 
 int OpenLogFile(const char* file_name)

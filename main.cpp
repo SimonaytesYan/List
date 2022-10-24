@@ -10,10 +10,12 @@ const char logs[] = "ListLogs.html";
 
 int main()
 {
-    OpenLogFile(logs);
+    OpenHtmlLogFile(logs);
+
+    printf("Start\n");
 
     List list = {};
-    ListCtor(&list, 15);
+    ListCtor(&list, 0);
 
     ListInsert(&list, 100, 0);
 
@@ -42,5 +44,5 @@ int main()
 
     ListDtor(&list);
 
-    CloseLogFile();
+    CloseHtmlLogFile();
 }

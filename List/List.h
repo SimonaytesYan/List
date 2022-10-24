@@ -6,6 +6,7 @@
 #include "..\Libs\Logging\Logging.h"
 #include "..\Libs\Errors.h"
 
+const int         ResizeCoef = 2; 
 const void*       POISON_PTR = (void*)13;
 const ListElem_t  POISON     = 0X7FFFFFFF;
 
@@ -52,18 +53,13 @@ void DumpList(List* list, const char* function, const char* file, int line);
 //!---------------------
 int ListInsert(List* list, int value, int after_which, int* index = nullptr);
 
-int  ListPop(List* list, int index);
+int ListPop(List* list, int index);
 
-int  FindFree(List* list, int* index);
+int FindFree(List* list, int* index);
+
+int ResizeUp(List* list, int new_capacity);
 
 #define DUMP_L(list) DumpList(list, __PRETTY_FUNCTION__, __FILE__, __LINE__)
-
-#define ReturnIfError(func)                 \
-    {                                       \
-        int error = func;                   \
-        if (error != NO_ERROR)              \
-            return error;                   \
-    }
 
 void DumpList(List* list, const char* function, const char* file, int line)
 {
@@ -95,7 +91,7 @@ void DumpList(List* list, const char* function, const char* file, int line)
     {
         
         LogPrintf("\n\tdata:\t next:\t prev:\n");
-        for(int i = 0; i < list->capacity; i++)
+        for(int i = 0; i <= list->capacity; i++)
             LogPrintf("\t|%d|\t\t|%d|\t\t|%d|\n", list->data[i].val, list->data[i].next, list->data[i].prev);
         LogPrintf("\n");
     }
@@ -182,15 +178,15 @@ int FindFree(List* list, int* index)
 {
     ReturnIfError(ListCheck(list));
 
-    for(int i = 0; i < list->capacity; i++)
+    for(int i = 0; i <= list->capacity; i++)
         if (list->data[i].next == -1)
         {
             *index = i;
             return 0;
         }
 
-    LogPrintf("Free element not found\n\n");
-    return -1;
+    *index = -1;
+    return 0;
 }
 
 int ListPop(List* list, int index)
@@ -236,6 +232,23 @@ int ListPop(List* list, int index)
     return 0;
 }
 
+int ResizeUp(List* list, int new_capacity)
+{
+    ReturnIfError(ListCheck(list));
+
+    realloc(list->data, new_capacity + 1);
+
+    if (list->data == nullptr)
+        return MEMORY_ALLOCATION_ERROR;
+
+    for(int i = list->capacity + 1; i <= new_capacity; i++)
+        list->data[i] = {POISON, -1, -1};
+    
+    list->capacity = new_capacity;
+
+    return 0;
+}
+
 int ListInsert(List* list, int value, int after_which, int* index) 
 {
     ReturnIfError(ListCheck(list));
@@ -244,13 +257,27 @@ int ListInsert(List* list, int value, int after_which, int* index)
     
     CHECK(list->data[after_which].next == -1 || list->data[after_which].prev == -1, "Index to not inserted element", -1);
 
+    if (list->capacity == list->size)
+    {
+        int new_capacity = 0;
+        if (list->capacity == 0)
+            new_capacity = 2;
+        else
+            new_capacity = list->capacity * ResizeCoef;
+        ReturnIfError(ResizeUp(list, new_capacity));
+    }
+
     int free_elem_index = -1;
     ReturnIfError(FindFree(list, &free_elem_index));
+
     if (index != nullptr && index != POISON_PTR)
         *index = free_elem_index;
-
+    
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
+
+    LogPrintf("size      = %d\n", list->size);
+    LogPrintf("free elem = %d\n", free_elem_index);
     
     if (list->size == 0)
     {
@@ -285,7 +312,9 @@ int ListInsert(List* list, int value, int after_which, int* index)
         list->data[next].prev        = free_elem_index; 
         list->data[after_which].next = free_elem_index;
     }
+
     list->size++;
+
     return 0;
 }
 
