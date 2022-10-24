@@ -20,10 +20,13 @@ int main()
 
     List list = {};
     ListCtor(&list, 0);
+    DUMP_L(&list);
 
     ListInsert(&list, 100, 0);
-    ListInsert(&list, 100, 1);
-    ListInsert(&list, 100, 2);
+    DUMP_L(&list);
+    ListInsert(&list, 200, 2);
+    DUMP_L(&list);
+    ListInsert(&list, 300, 1);
 
     DUMP_L(&list);
 

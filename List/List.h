@@ -31,6 +31,7 @@ typedef struct List {
     size_t    capacity = 0;
     ListElem* data     = nullptr;
     LogInfo   debug    = {};
+    int       free     = -1;
 }List;
 
 int  ListCheck(List* list);
@@ -87,6 +88,7 @@ void DumpList(List* list, const char* function, const char* file, int line)
     LogPrintf("{\n");
     LogPrintf("\tsize     = %zu\n", list->size);
     LogPrintf("\tcapacity = %zu\n", list->capacity);
+    LogPrintf("\tfree     = %zu\n", list->free);
 
     if (list->data != nullptr && list->data != POISON_PTR)
     {
@@ -147,13 +149,13 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
 
     list->size     = 0;
     list->capacity = capacity;
+    list->free     = -1;
     list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
     if (list->data != nullptr)
         for(int i = 1; i <= list->capacity; i++)
         {
-            list->data[i].val  = POISON;
-            list->data[i].prev = -1;
-            list->data[i].next = -1;
+            list->data[i] = {POISON, -1, list->free};
+            list->free    = i;
         }
 
     list->debug.name     = name;
@@ -171,6 +173,7 @@ int ListDtor(List* list)
 
     list->capacity = POISON;
     list->size     = POISON;
+    list->free     = POISON;
 
     free(list->data);
     list->data = (ListElem*)POISON_PTR;
@@ -187,14 +190,9 @@ int FindFree(List* list, int* index)
 {
     ReturnIfError(ListCheck(list));
 
-    for(int i = 0; i <= list->capacity; i++)
-        if (list->data[i].next == -1)
-        {
-            *index = i;
-            return 0;
-        }
+    *index = list->free;
+    list->free = list->data[list->free].prev;
 
-    *index = -1;
     return 0;
 }
 
@@ -213,8 +211,11 @@ int ListPop(List* list, int index)
     list->data[prev_ind].next = next_ind;
 
     list->data[index].val  = POISON;
-    list->data[index].prev = -1;
+    list->data[index].prev = list->free;
     list->data[index].next = -1;
+
+    list->data[list->free].next = list->free;
+    list->free = index;
 
     list->size--;
 
@@ -231,7 +232,10 @@ int ResizeUp(List* list, int new_capacity)
         return MEMORY_ALLOCATION_ERROR;
 
     for(int i = list->capacity + 1; i <= new_capacity; i++)
-        list->data[i] = {POISON, -1, -1};
+    {
+        list->data[i] = {POISON, -1, list->free};
+        list->free = i;
+    }
     
     list->capacity = new_capacity;
 
