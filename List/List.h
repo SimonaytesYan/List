@@ -107,15 +107,14 @@ void GraphicDump(List* list)
     fprintf(fp, "digraph{\n");
     fprintf(fp, "rankdir=LR;\n"                                 \
                 "node[shape = record, fontsize=14];\n"          \
-                "edge[style = invis, weight = 7]\n"             \
-                "splines = spline\n");
+                "edge[style = invis, weight = 7]\n");
 
     if (list == nullptr || list == POISON_PTR) 
         return;
     if (list->data == nullptr || list->data == POISON_PTR)
         return;
 
-    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d\"]", list->size, list->capacity, list->free);
+    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d\"]\n", list->size, list->capacity, list->free);
 
     for(int i = 0; i <= list->capacity; i++)
     {
@@ -127,24 +126,27 @@ void GraphicDump(List* list)
     }
 
     int index = 0;
-    fprintf(fp, "edge [style = solid, color = \"red\", weight = 1]");
+    fprintf(fp, "splines=ortho\n"\
+                "edge [style = solid, color = \"red\", weight = 1]\n");
     for(int i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
-        fprintf(fp, "Node%d:<p> -> Node%d:<n>\n", index, prev);
+        fprintf(fp, "Node%d:<p> -> Node%d\n", index, prev);
         index = prev;
     }
     
-    fprintf(fp, "edge [style = solid, color = \"blue\", weight = 1]\n");
+    fprintf(fp, "splines=ortho\n"\
+                "edge [splines=ortho,style = solid, color = \"blue\", weight = 1]\n");
     index = 0;
     for(int i = 0; i <= list->size; i++)
     {
         int next = list->data[index].next;
-        fprintf(fp, "Node%d:<n> -> Node%d:<p>\n", index, next);
+        fprintf(fp, "Node%d:<n> -> Node%d\n", index, next);
         index = next;
     }
 
-    fprintf(fp, "edge [style = solid, color = \"black\", weight = 1]\n");
+    fprintf(fp, "splines=spline\n"\
+                "edge [splines=ortho, style = solid, color = \"black\", weight = 1]\n");
     index = list->free;
     if (index != -1)
     {
