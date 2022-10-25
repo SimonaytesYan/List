@@ -37,7 +37,7 @@ Node15[label = "<v>2147483647 \n | {<p> 14 |<n>  -1}"]
 Node14->Node15
 Node16[label = "<v>900 \n | {<p> 1 |<n>  5}"]
 Node15->Node16
-splines=ortho
+splines=polyline
 edge [style = solid, color = "red", weight = 1]
 Node0:<p> -> Node4
 Node4:<p> -> Node3

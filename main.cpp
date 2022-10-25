@@ -34,15 +34,13 @@ int main()
     GraphicDump(&list);
     system("Dot dump0 -o Dump0.png -T png");
     
-
-    
     for(int i = 1; i < 17; i++)
     {
         int index = 0;
         PhysIndexToLogical(&list, i, &index);
         printf("[%d] = %d\n",i, index);
     }
-    
+
     printf("End\n");
     CloseHtmlLogFile();
 }

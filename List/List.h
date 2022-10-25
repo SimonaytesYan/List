@@ -61,6 +61,8 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
+int Iterate(List* list, int* index);
+
 //!---------------------
 //!@param [in]  list        List for searching logical index from physical
 //!@param [in]  phys_index  Physical index
@@ -71,6 +73,15 @@ int ResizeUp(List* list, int new_capacity);
 
 int PhysIndexToLogical(List* list, int phys_index, int* log_index);
 
+int Iterate(List* list, int* index)
+{
+    ReturnIfError(ListCheck(list));
+    CHECK(index == nullptr || index == POISON_PTR, "index = nullptr", -1);
+
+    *index = list->data[*index].next;
+    return 0;
+}
+
 int PhysIndexToLogical(List* list, int phys_index, int* log_index)
 {
     ReturnIfError(ListCheck(list));
@@ -79,7 +90,7 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
     *log_index = -1;
     for(int i = 0; i < list->size; i++)
     {
-        index = list->data[index].next;
+        Iterate(list, &index);
         if (index == -1)
         {
             LogPrintf("Element in physical index %d not found\n", phys_index);
@@ -126,7 +137,7 @@ void GraphicDump(List* list)
     }
 
     int index = 0;
-    fprintf(fp, "splines=ortho\n"\
+    fprintf(fp, "splines=polyline\n"\
                 "edge [style = solid, color = \"red\", weight = 1]\n");
     for(int i = 0; i <= list->size; i++)
     {
