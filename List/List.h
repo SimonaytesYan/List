@@ -82,7 +82,7 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
         index = list->data[index].next;
         if (index == -1)
         {
-            LogPrintf("Next element not found\n");
+            LogPrintf("Element in physical index %d not found\n", phys_index);
             return 0;
         }
         if (index == phys_index)
@@ -91,7 +91,6 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
             break;
         }
     }
-    LogPrintf("Element in physical index %d not found\n", phys_index);
     
     return 0;
 }
