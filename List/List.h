@@ -61,7 +61,16 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
-int Iterate(List* list, int* index);
+//!-----------------------
+//!Not iterate if index  indicates to the end of the list
+//!
+//!
+//!-----------------------
+int ListIterate(List* list, int* index);
+
+int ListBegin(List* list, int *index);
+
+int ListEnd(List* list, int *index);
 
 //!---------------------
 //!@param [in]  list        List for searching logical index from physical
@@ -70,16 +79,41 @@ int Iterate(List* list, int* index);
 //!@return Error code according to Errors.h
 //!
 //!---------------------
-
 int PhysIndexToLogical(List* list, int phys_index, int* log_index);
 
-int Iterate(List* list, int* index)
+int ListIterate(List* list, int* index)
 {
     ReturnIfError(ListCheck(list));
     CHECK(index == nullptr || index == POISON_PTR, "index = nullptr", -1);
 
-    *index = list->data[*index].next;
+    if (list->data[*index].next != 0)
+        *index = list->data[*index].next;
+
     return 0;
+}
+
+int ListBegin(List* list, int *index)
+{
+    ReturnIfError(ListCheck(list));
+
+    if (list->capacity >= 1)
+        *index = list->data[0].next;
+    else
+        *index = -1;
+
+    return 0;
+}
+
+int ListEnd(List* list, int *index)
+{
+    ReturnIfError(ListCheck(list));
+
+    if (list->capacity >= 1)
+        *index = list->data[0].prev;
+    else
+        *index = -1;
+
+    return 0;    
 }
 
 int PhysIndexToLogical(List* list, int phys_index, int* log_index)
@@ -90,7 +124,7 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
     *log_index = -1;
     for(int i = 0; i < list->size; i++)
     {
-        Iterate(list, &index);
+        ListIterate(list, &index);
         if (index == -1)
         {
             LogPrintf("Element in physical index %d not found\n", phys_index);
