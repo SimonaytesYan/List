@@ -26,7 +26,8 @@ typedef struct LogInfo
     bool        status   = false;
 } LogInfo;
 
-typedef struct List {
+typedef struct List 
+{
     size_t    size     = 0;
     size_t    capacity = 0;
     ListElem* data     = nullptr;
@@ -60,6 +61,41 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
+//!---------------------
+//!@param [in]  list        List for searching logical index from physical
+//!@param [in]  phys_index  Physical index
+//!@param [out] log_index   Logical index of element(-1 if element not found)
+//!@return Error code according to Errors.h
+//!
+//!---------------------
+
+int PhysIndexToLogical(List* list, int phys_index, int* log_index);
+
+int PhysIndexToLogical(List* list, int phys_index, int* log_index)
+{
+    ReturnIfError(ListCheck(list));
+
+    int index = 0;
+    *log_index = -1;
+    for(int i = 0; i < list->size; i++)
+    {
+        index = list->data[index].next;
+        if (index == -1)
+        {
+            LogPrintf("Next element not found\n");
+            return 0;
+        }
+        if (index == phys_index)
+        {
+            *log_index = i;
+            break;
+        }
+    }
+    LogPrintf("Element in physical index %d not found\n", phys_index);
+    
+    return 0;
+}
+
 int counter = 0;
 
 void GraphicDump(List* list)
@@ -70,9 +106,10 @@ void GraphicDump(List* list)
     FILE* fp = fopen(name, "w");
 
     fprintf(fp, "digraph{\n");
-    fprintf(fp, "rankdir=LR;\n"                                \
+    fprintf(fp, "rankdir=LR;\n"                                 \
                 "node[shape = record, fontsize=14];\n"          \
-                "edge[style = invis, weight = 5]\n");
+                "edge[style = invis, weight = 7]\n"             \
+                "splines = spline\n");
 
     if (list == nullptr || list == POISON_PTR) 
         return;
@@ -95,7 +132,7 @@ void GraphicDump(List* list)
     for(int i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
-        fprintf(fp, "Node%d:<p> -> Node%d\n", index, prev);
+        fprintf(fp, "Node%d:<p> -> Node%d:<n>\n", index, prev);
         index = prev;
     }
     
@@ -104,7 +141,7 @@ void GraphicDump(List* list)
     for(int i = 0; i <= list->size; i++)
     {
         int next = list->data[index].next;
-        fprintf(fp, "Node%d:<n> -> Node%d\n", index, next);
+        fprintf(fp, "Node%d:<n> -> Node%d:<p>\n", index, next);
         index = next;
     }
 
@@ -312,14 +349,8 @@ int ResizeUp(List* list, int new_capacity)
     return 0;
 }
 
-int ListInsert(List* list, int value, int after_which, int* index) 
+int ResizeIfNeed(List *list)
 {
-    ReturnIfError(ListCheck(list));
-
-    CHECK(after_which > list->capacity || after_which < 0, "Error index", -1);
-    
-    CHECK(list->data[after_which].next == -1 || list->data[after_which].prev == -1, "Index to not inserted element", -1);
-
     if (list->capacity == list->size)
     {
         int new_capacity = 0;
@@ -329,6 +360,19 @@ int ListInsert(List* list, int value, int after_which, int* index)
             new_capacity = list->capacity * ResizeCoef;
         ReturnIfError(ResizeUp(list, new_capacity));
     }
+
+    return 0;
+}
+
+int ListInsert(List* list, int value, int after_which, int* index) 
+{
+    ReturnIfError(ListCheck(list));
+
+    CHECK(after_which > list->capacity || after_which < 0, "Error index", -1);
+    
+    CHECK(list->data[after_which].next == -1 || list->data[after_which].prev == -1, "Index to not inserted element", -1);
+
+    ReturnIfError(ResizeIfNeed(list));
 
     int free_elem_index = -1;
     ReturnIfError(FindFree(list, &free_elem_index));
