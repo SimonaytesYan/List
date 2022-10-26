@@ -2,6 +2,7 @@ digraph{
 rankdir=LR;
 node[shape = record, fontsize=14];
 edge[style = invis, weight = 7]
+splines=polyline
 info[label = "size = 9\n | capasity = 16 \n | <f> free = 15"]
 Node0[label = "<v>0 \n | {<p> 4 |<n>  2}"]
 info:s -> Node0:v:n
@@ -37,7 +38,6 @@ Node15[label = "<v>2147483647 \n | {<p> 14 |<n>  -1}"]
 Node14->Node15
 Node16[label = "<v>900 \n | {<p> 1 |<n>  5}"]
 Node15->Node16
-splines=polyline
 edge [style = solid, color = "red", weight = 1]
 Node0:<p> -> Node4
 Node4:<p> -> Node3
@@ -49,8 +49,7 @@ Node5:<p> -> Node16
 Node16:<p> -> Node1
 Node1:<p> -> Node2
 Node2:<p> -> Node0
-splines=ortho
-edge [splines=ortho,style = solid, color = "blue", weight = 1]
+edge [style = solid, color = "blue", weight = 1]
 Node0:<n> -> Node2
 Node2:<n> -> Node1
 Node1:<n> -> Node16
@@ -61,8 +60,7 @@ Node7:<n> -> Node8
 Node8:<n> -> Node3
 Node3:<n> -> Node4
 Node4:<n> -> Node0
-splines=spline
-edge [splines=ortho, style = solid, color = "black", weight = 1]
+edge [style = solid, color = "black", weight = 1]
 info:<f> -> Node15
 Node15 -> Node14
 Node14 -> Node13

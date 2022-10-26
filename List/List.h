@@ -6,7 +6,7 @@
 #include "..\Libs\Logging\Logging.h"
 #include "..\Libs\Errors.h"
 
-const int         ResizeCoef = 2; 
+const int         ResizeCoef = 2;
 const void*       POISON_PTR = (void*)13;
 const ListElem_t  POISON     = 0X7FFFFFFF;
 
@@ -63,7 +63,7 @@ int ResizeUp(List* list, int new_capacity);
 
 //!-----------------------
 //!Not iterate if index  indicates to the end of the list
-//!
+//!index will be -1 if there isn`t next element in list
 //!
 //!-----------------------
 int ListIterate(List* list, int* index);
@@ -85,6 +85,9 @@ int ListIterate(List* list, int* index)
 {
     ReturnIfError(ListCheck(list));
     CHECK(index == nullptr || index == POISON_PTR, "index = nullptr", -1);
+
+    if (*index < 0 || *index >= list->capacity)
+        return 0;
 
     if (list->data[*index].next != 0)
         *index = list->data[*index].next;
@@ -114,6 +117,48 @@ int ListEnd(List* list, int *index)
         *index = -1;
 
     return 0;    
+}
+
+int ListLinerization(List* list)
+{
+    ReturnIfError(ListCheck(list));
+
+    if (list->size <= 1)
+        return 0;
+
+    ListElem* new_data = (ListElem*)calloc(list->capacity + 1, sizeof(ListElem));
+
+    int index = 0;
+    for(int i = 0; i < list->size; i++)
+    {
+        ListIterate(list, &index);
+        if (index == -1)
+            return -1;
+
+        new_data[i + 1].val  = list->data[index].val;
+
+        if (i + 1 == list->size)
+            new_data[i + 1].next = 0;
+        else
+            new_data[i + 1].next = i + 2;
+        new_data[i + 1].prev = i;
+    }
+    new_data[0].next = 1;
+    new_data[0].prev = list->size;
+
+    free(list->data);
+    list->data = new_data;
+
+    list->free = list->size + 1;
+    for(int i = list->size + 1; i < list->capacity; i++)
+    {
+        list->data[i].prev = i + 1;
+        list->data[i].next = -1;
+    }
+    list->data[list->capacity].prev = -1;
+    list->data[list->capacity].next = -1;
+
+    return 0;
 }
 
 int PhysIndexToLogical(List* list, int phys_index, int* log_index)
@@ -152,7 +197,8 @@ void GraphicDump(List* list)
     fprintf(fp, "digraph{\n");
     fprintf(fp, "rankdir=LR;\n"                                 \
                 "node[shape = record, fontsize=14];\n"          \
-                "edge[style = invis, weight = 7]\n");
+                "edge[style = invis, weight = 7]\n"             \
+                "splines=polyline\n");
 
     if (list == nullptr || list == POISON_PTR) 
         return;
@@ -171,8 +217,7 @@ void GraphicDump(List* list)
     }
 
     int index = 0;
-    fprintf(fp, "splines=polyline\n"\
-                "edge [style = solid, color = \"red\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"red\", weight = 1]\n");
     for(int i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
@@ -180,8 +225,7 @@ void GraphicDump(List* list)
         index = prev;
     }
     
-    fprintf(fp, "splines=ortho\n"\
-                "edge [splines=ortho,style = solid, color = \"blue\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"blue\", weight = 1]\n");
     index = 0;
     for(int i = 0; i <= list->size; i++)
     {
@@ -190,13 +234,12 @@ void GraphicDump(List* list)
         index = next;
     }
 
-    fprintf(fp, "splines=spline\n"\
-                "edge [splines=ortho, style = solid, color = \"black\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"black\", weight = 1]\n");
     index = list->free;
     if (index != -1)
     {
         fprintf(fp, "info:<f> -> Node%d\n", index);
-        for(int i = 0; i <= list->capacity; i++)
+        for(int i = 0; i <= list->capacity; i++)    
         {
             int free_ind = list->data[index].prev;
             if (free_ind == -1)
