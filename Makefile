@@ -4,6 +4,7 @@ all: logging
 create_dirs:
 	mkdir Exe
 	mkdir Obj
+	mkdir GraphicDumps
 
 logging:
 	g++ -c Libs/Logging/Logging.cpp -o Obj/Logging.o

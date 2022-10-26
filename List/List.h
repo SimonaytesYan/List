@@ -9,7 +9,7 @@
 const int         ResizeCoef         = 2;
 const void*       POISON_PTR         = (void*)13;
 const ListElem_t  POISON             = 0X7FFFFFFF;
-const char        COMAND_PROTOTYPE[] = "Dot dump%d -o Dump%d.png -T png";
+const char        COMAND_PROTOTYPE[] = "Dot GraphicDumps/dump%d -o GraphicDumps/Dump%d.png -T png";
       int         GRAPHIC_DUMP_CNT   = 0;
 
 typedef struct ListElem 
@@ -190,7 +190,7 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
 void GraphicDump(List* list)
 {
     char name[20] = "";
-    sprintf(name, "dump%d", GRAPHIC_DUMP_CNT);
+    sprintf(name, "GraphicDumps/dump%d", GRAPHIC_DUMP_CNT);
     FILE* fp = fopen(name, "w");
 
     fprintf(fp, "digraph{\n");
@@ -256,7 +256,6 @@ void GraphicDump(List* list)
     sprintf(comand, COMAND_PROTOTYPE, GRAPHIC_DUMP_CNT, GRAPHIC_DUMP_CNT);
     system(comand);
 
-    printf(comand);
     GRAPHIC_DUMP_CNT++;
 }
 
