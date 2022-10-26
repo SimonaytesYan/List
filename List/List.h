@@ -30,11 +30,12 @@ typedef struct LogInfo
 
 typedef struct List 
 {
-    size_t    size     = 0;
-    size_t    capacity = 0;
-    ListElem* data     = nullptr;
-    LogInfo   debug    = {};
-    int       free     = -1;
+    size_t    size      = 0;
+    size_t    capacity  = 0;
+    ListElem* data      = nullptr;
+    LogInfo   debug     = {};
+    int       free      = -1;
+    bool      linerized = false;
 }List;
 
 int  ListCheck(List* list);
@@ -151,14 +152,19 @@ int ListLinerization(List* list)
     free(list->data);
     list->data = new_data;
 
-    list->free = list->size + 1;
-    for(int i = list->size + 1; i < list->capacity; i++)
+    if (list->capacity != list->size)
     {
-        list->data[i].prev = i + 1;
-        list->data[i].next = -1;
+        list->free = list->capacity;
+        for(int i = list->capacity; i > list->size + 1; i--)
+        {
+            list->data[i].prev = i + 1;
+            list->data[i].next = -1;
+        }
+        list->data[list->size + 1].prev = -1;
+        list->data[list->size + 1].next = -1;
     }
-    list->data[list->capacity].prev = -1;
-    list->data[list->capacity].next = -1;
+
+    list->linerized = true;
 
     return 0;
 }
@@ -167,6 +173,11 @@ int PhysIndexToLogical(List* list, int phys_index, int* log_index)
 {
     ReturnIfError(ListCheck(list));
 
+    if (list->linerized)
+    {
+        *log_index = phys_index - 1;
+        return 0;
+    }
     int index = 0;
     *log_index = -1;
     for(int i = 0; i < list->size; i++)
@@ -196,7 +207,7 @@ void GraphicDump(List* list)
     fprintf(fp, "digraph{\n");
     fprintf(fp, "rankdir=LR;\n"                                 \
                 "node[shape = record, fontsize=14];\n"          \
-                "edge[style = invis, weight = 7]\n"             \
+                "edge[style = invis, constraint = true]\n"             \
                 "splines=polyline\n");
 
     if (list == nullptr || list == POISON_PTR) 
@@ -204,7 +215,7 @@ void GraphicDump(List* list)
     if (list->data == nullptr || list->data == POISON_PTR)
         return;
 
-    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d\"]\n", list->size, list->capacity, list->free);
+    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d \\n | linerized = %d \\n \"]\n", list->size, list->capacity, list->free, list->linerized);
 
     for(int i = 0; i <= list->capacity; i++)
     {
@@ -212,11 +223,11 @@ void GraphicDump(List* list)
         if (i == 0)
             fprintf(fp, "info:s -> Node0:v:n\n");
         else 
-            fprintf(fp, "Node%d->Node%d\n", i-1, i);
+            fprintf(fp, "Node%d->Node%d\n", i - 1, i);
     }
 
     int index = 0;
-    fprintf(fp, "edge [style = solid, color = \"red\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"red\", constraint = false]\n");
     for(int i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
@@ -224,7 +235,7 @@ void GraphicDump(List* list)
         index = prev;
     }
     
-    fprintf(fp, "edge [style = solid, color = \"blue\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"blue\", constraint = false]\n");
     index = 0;
     for(int i = 0; i <= list->size; i++)
     {
@@ -233,7 +244,7 @@ void GraphicDump(List* list)
         index = next;
     }
 
-    fprintf(fp, "edge [style = solid, color = \"black\", weight = 1]\n");
+    fprintf(fp, "edge [style = solid, color = \"black\", constraint = false]\n");
     index = list->free;
     if (index != -1)
     {
@@ -353,7 +364,7 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     list->free     = -1;
     list->data     = (ListElem*)calloc(capacity + 1, sizeof(ListElem));
     if (list->data != nullptr)
-        for(int i = 1; i <= list->capacity; i++)
+        for(int i = list->capacity; i >= 1; i--)
         {
             list->data[i] = {POISON, -1, list->free};
             list->free    = i;
@@ -364,6 +375,7 @@ int ListConstructor(List* list, int capacity, int line, const char* name, const 
     list->debug.file     = file;
     list->debug.line     = line;
     list->debug.status   = true;
+    list->linerized      = true;
 
     return ListCheck(list);
 }
@@ -372,9 +384,10 @@ int ListDtor(List* list)
 {
     ListCheck(list);
 
-    list->capacity = POISON;
-    list->size     = POISON;
-    list->free     = POISON;
+    list->capacity  = POISON;
+    list->size      = POISON;
+    list->free      = POISON;
+    list->linerized = false;
 
     free(list->data);
     list->data = (ListElem*)POISON_PTR;
@@ -408,6 +421,11 @@ int ListPop(List* list, int index)
 
     CHECK(next_ind == -1 || prev_ind == -1, "Index to not inserted element", -1);
 
+    int tail = 0;
+    ReturnIfError(ListEnd(list, &tail));
+    if (index != tail)
+        list->linerized = false;
+
     list->data[next_ind].prev = prev_ind;
     list->data[prev_ind].next = next_ind;
 
@@ -417,7 +435,7 @@ int ListPop(List* list, int index)
 
     list->data[list->free].next = list->free;
     list->free = index;
-
+ 
     list->size--;
 
     return 0;
@@ -432,7 +450,7 @@ int ResizeUp(List* list, int new_capacity)
     if (list->data == nullptr)
         return MEMORY_ALLOCATION_ERROR;
 
-    for(int i = list->capacity + 1; i <= new_capacity; i++)
+    for(int i = new_capacity; i >= list->capacity + 1; i--)
     {
         list->data[i] = {POISON, -1, list->free};
         list->free = i;
@@ -473,6 +491,11 @@ int ListInsert(List* list, int value, int after_which, int* index)
 
     if (index != nullptr && index != POISON_PTR)
         *index = free_elem_index;
+
+    int tail = 0;
+    ReturnIfError(ListEnd(list, &tail));
+    if (after_which != tail)
+        list->linerized = false;
     
     ListElem* new_elem = &list->data[free_elem_index];
     new_elem->val = value;
