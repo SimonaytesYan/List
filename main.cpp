@@ -34,16 +34,10 @@ int main()
     ListInsert(&list, 900, 1);
 
     GraphicDump(&list);
-
-    //const char comand_prototipe[] = "Dot dump%d -o Dump%d.png -T png";
-    
-    //char comand[50] = "";
-    //sprintf(comand, comand_prototipe, counter);
-    system("Dot dump0 -o Dump0.png -T png");
     
     ListLinerization(&list);
+    
     GraphicDump(&list);
-    system("Dot dump1 -o Dump1.png -T png");
 
     printf("End\n");
     CloseHtmlLogFile();
