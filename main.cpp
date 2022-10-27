@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 typedef int ListElem_t;
 
 #include "Libs\Logging\Logging.h"
@@ -24,22 +23,30 @@ int main()
     ListCtor(&list, 0);
 
     ListInsert(&list, 100, 0);
-    ListInsert(&list, 200, 1);
-    ListInsert(&list, 400, 1);
-    ListInsert(&list, 500, 1);
-    ListInsert(&list, 600, 1);
-    ListInsert(&list, 700, 1);
-    ListInsert(&list, 800, 1);
-    ListInsert(&list, 900, 1);
-    GraphicDump(&list);
+    int index = 0;
+    ListEnd(&list, &index);
+    ListInsert(&list, 200, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 300, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 400, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 500, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 600, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 700, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 800, index);
+    ListEnd(&list, &index);
+    ListInsert(&list, 900, index);
+
     
     ListLinerization(&list);
     
     GraphicDump(&list);
 
-    ListSwap(&list, 2, 5);
-    DUMP_L(&list);
-
+    ListSwap(&list, 1, 5);
     GraphicDump(&list);
 
     printf("End\n");

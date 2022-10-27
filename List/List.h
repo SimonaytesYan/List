@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "..\Libs\Logging\Logging.h"
+#include "..\Libs\Swap\Swap.h"
 #include "..\Libs\Errors.h"
 
 const int         ResizeCoef         = 2;
@@ -64,7 +65,7 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
-int SwapInList(List* list, int index1, int index2);
+int ListSwap(List* list, int index1, int index2);
 
 //!-----------------------
 //!Not iterate if index  indicates to the end of the list
@@ -76,6 +77,8 @@ int ListIterate(List* list, int* index);
 int ListBegin(List* list, int *index);
 
 int ListEnd(List* list, int *index);
+
+int ListLinerization(List* list);
 
 //!---------------------
 //!@param [in]  list        List for searching logical index from physical
@@ -105,13 +108,15 @@ int ListSwap(List* list, int index1, int index2)
     CHECK(prev_1 < 0 || next_1 < 0, "First element to swap didn`t add in list", -1);
     CHECK(prev_2 < 0 || next_2 < 0, "Second element to swap didn`t add in list", -1);
 
-    list->data[next_1].prev = index2;
     list->data[prev_1].next = index2;
+    list->data[next_1].prev = index2;
     
-    list->data[next_2].prev = index1;
     list->data[prev_2].next = index1;
+    list->data[next_2].prev = index1;
 
     list->linerized = false;
+
+    ReturnIfError(NormalSwap(&(list->data[index1]), &(list->data[index2]), sizeof(ListElem)));
 
     return 0;
 }
@@ -158,7 +163,7 @@ int ListLinerization(List* list)
 {
     ReturnIfError(ListCheck(list));
 
-    if (list->size <= 1)
+    if (list->size <= 1 || list->linerized)
         return 0;
 
     ListElem* new_data = (ListElem*)calloc(list->capacity + 1, sizeof(ListElem));
