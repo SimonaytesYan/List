@@ -24,19 +24,8 @@ int main()
     ListCtor(&list, 0);
 
     ListInsert(&list, 100, 0);
-
-    int index = 0;
-    PhysIndexToLogical(&list, 1, &index);
-    printf("[1] = %d\n", index);
-
     ListInsert(&list, 200, 1);
-    index = 0;
-    PhysIndexToLogical(&list, 2, &index);
-    printf("[2] = %d\n", index);
     ListInsert(&list, 400, 1);
-    index = 0;
-    PhysIndexToLogical(&list, 3, &index);
-    printf("[3] = %d\n", index);
     ListInsert(&list, 500, 1);
     ListInsert(&list, 600, 1);
     ListInsert(&list, 700, 1);
@@ -47,7 +36,10 @@ int main()
     ListLinerization(&list);
     
     GraphicDump(&list);
-    
+
+    ListSwap(&list, 1, 5);
+
+    GraphicDump(&list);
 
     printf("End\n");
     CloseHtmlLogFile();

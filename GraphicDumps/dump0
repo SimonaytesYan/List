@@ -1,0 +1,46 @@
+digraph{
+rankdir=LR;
+node[shape = record, fontsize=14];
+edge[style = invis, constraint = true]
+splines=spline
+info[label = "size = 8\n | capasity = 8 \n | <f> free = -1 \n | linerized = 0 \n "]
+Node0[label = "<v>0 \n | {<p> 2 |<n>  1}"]
+info:s -> Node0:v:n
+Node1[label = "<v>100 \n | {<p> 0 |<n>  8}"]
+Node0->Node1
+Node2[label = "<v>200 \n | {<p> 3 |<n>  0}"]
+Node1->Node2
+Node3[label = "<v>400 \n | {<p> 4 |<n>  2}"]
+Node2->Node3
+Node4[label = "<v>500 \n | {<p> 5 |<n>  3}"]
+Node3->Node4
+Node5[label = "<v>600 \n | {<p> 6 |<n>  4}"]
+Node4->Node5
+Node6[label = "<v>700 \n | {<p> 7 |<n>  5}"]
+Node5->Node6
+Node7[label = "<v>800 \n | {<p> 8 |<n>  6}"]
+Node6->Node7
+Node8[label = "<v>900 \n | {<p> 1 |<n>  7}"]
+Node7->Node8
+edge [style = solid, color = "red", constraint = false]
+Node0:<p> -> Node2
+Node2:<p> -> Node3
+Node3:<p> -> Node4
+Node4:<p> -> Node5
+Node5:<p> -> Node6
+Node6:<p> -> Node7
+Node7:<p> -> Node8
+Node8:<p> -> Node1
+Node1:<p> -> Node0
+edge [style = solid, color = "blue", constraint = false]
+Node0:<n> -> Node1
+Node1:<n> -> Node8
+Node8:<n> -> Node7
+Node7:<n> -> Node6
+Node6:<n> -> Node5
+Node5:<n> -> Node4
+Node4:<n> -> Node3
+Node3:<n> -> Node2
+Node2:<n> -> Node0
+edge [style = solid, color = "black", constraint = false]
+}

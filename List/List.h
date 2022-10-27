@@ -64,6 +64,8 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
+int SwapInList(List* list, int index1, int index2);
+
 //!-----------------------
 //!Not iterate if index  indicates to the end of the list
 //!index will be -1 if there isn`t next element in list
@@ -84,12 +86,42 @@ int ListEnd(List* list, int *index);
 //!---------------------
 int PhysIndexToLogical(List* list, int phys_index, int* log_index);
 
+int ListSwap(List* list, int index1, int index2)
+{
+    ReturnIfError(ListCheck(list));
+    
+    if (index1 == index2)
+        return 0;
+
+    CHECK(index1 == 0 || index1 > list->capacity, "Wrong first index", -1);
+    CHECK(index2 == 0 || index2 > list->capacity, "Wrong second index", -1);
+
+    int next_1 = list->data[index1].next;
+    int prev_1 = list->data[index1].prev;
+
+    int next_2 = list->data[index2].next;
+    int prev_2 = list->data[index2].prev;
+
+    CHECK(prev_1 < 0 || next_1 < 0, "First element to swap didn`t add in list", -1);
+    CHECK(prev_2 < 0 || next_2 < 0, "Second element to swap didn`t add in list", -1);
+
+    list->data[next_1].prev = index2;
+    list->data[prev_1].next = index2;
+    
+    list->data[next_2].prev = index1;
+    list->data[prev_2].next = index1;
+
+    list->linerized = false;
+
+    return 0;
+}
+
 int ListIterate(List* list, int* index)
 {
     ReturnIfError(ListCheck(list));
     CHECK(index == nullptr || index == POISON_PTR, "index = nullptr", -1);
 
-    if (*index < 0 || *index >= list->capacity)
+    if (*index < 0 || *index > list->capacity)
         return 0;
 
     if (list->data[*index].next != 0)
@@ -137,6 +169,7 @@ int ListLinerization(List* list)
         ListIterate(list, &index);
         if (index == -1)
             return -1;
+            printf("[%d]index = %d\n", i, index);
 
         new_data[i + 1].val  = list->data[index].val;
 
@@ -208,7 +241,7 @@ void GraphicDump(List* list)
     fprintf(fp, "rankdir=LR;\n"                                 \
                 "node[shape = record, fontsize=14];\n"          \
                 "edge[style = invis, constraint = true]\n"             \
-                "splines=polyline\n");
+                "splines=spline\n");
 
     if (list == nullptr || list == POISON_PTR) 
         return;
