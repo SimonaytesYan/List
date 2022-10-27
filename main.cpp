@@ -37,7 +37,8 @@ int main()
     
     GraphicDump(&list);
 
-    ListSwap(&list, 1, 5);
+    ListSwap(&list, 2, 5);
+    DUMP_L(&list);
 
     GraphicDump(&list);
 

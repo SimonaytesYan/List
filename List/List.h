@@ -169,7 +169,6 @@ int ListLinerization(List* list)
         ListIterate(list, &index);
         if (index == -1)
             return -1;
-            printf("[%d]index = %d\n", i, index);
 
         new_data[i + 1].val  = list->data[index].val;
 
@@ -266,6 +265,8 @@ void GraphicDump(List* list)
         int prev = list->data[index].prev;
         fprintf(fp, "Node%d:<p> -> Node%d\n", index, prev);
         index = prev;
+        if (index == 0)
+            break;
     }
     
     fprintf(fp, "edge [style = solid, color = \"blue\", constraint = false]\n");
@@ -275,6 +276,8 @@ void GraphicDump(List* list)
         int next = list->data[index].next;
         fprintf(fp, "Node%d:<n> -> Node%d\n", index, next);
         index = next;
+        if (index == 0)
+            break;
     }
 
     fprintf(fp, "edge [style = solid, color = \"black\", constraint = false]\n");
