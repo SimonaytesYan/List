@@ -59,13 +59,12 @@ void GraphicDump(List* list);
 //!---------------------
 int ListInsert(List* list, int value, int after_which, int* index = nullptr);
 
-int ListPop(List* list, int index);
+int ListRemove(List* list, int index);
 
 int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
-int ListSwap(List* list, int index1, int index2);
 
 //!-----------------------
 //!Not iterate if index  indicates to the end of the list
@@ -88,38 +87,6 @@ int ListLinerization(List* list);
 //!
 //!---------------------
 int PhysIndexToLogical(List* list, int phys_index, int* log_index);
-
-int ListSwap(List* list, int index1, int index2)
-{
-    ReturnIfError(ListCheck(list));
-    
-    if (index1 == index2)
-        return 0;
-
-    CHECK(index1 == 0 || index1 > list->capacity, "Wrong first index", -1);
-    CHECK(index2 == 0 || index2 > list->capacity, "Wrong second index", -1);
-
-    int next_1 = list->data[index1].next;
-    int prev_1 = list->data[index1].prev;
-
-    int next_2 = list->data[index2].next;
-    int prev_2 = list->data[index2].prev;
-
-    CHECK(prev_1 < 0 || next_1 < 0, "First element to swap didn`t add in list", -1);
-    CHECK(prev_2 < 0 || next_2 < 0, "Second element to swap didn`t add in list", -1);
-
-    list->data[prev_1].next = index2;
-    list->data[next_1].prev = index2;
-    
-    list->data[prev_2].next = index1;
-    list->data[next_2].prev = index1;
-
-    list->linerized = false;
-
-    ReturnIfError(NormalSwap(&(list->data[index1]), &(list->data[index2]), sizeof(ListElem)));
-
-    return 0;
-}
 
 int ListIterate(List* list, int* index)
 {
@@ -163,7 +130,7 @@ int ListLinerization(List* list)
 {
     ReturnIfError(ListCheck(list));
 
-    if (list->size <= 1 || list->linerized)
+    if (list->linerized || list->size == 0)
         return 0;
 
     ListElem* new_data = (ListElem*)calloc(list->capacity + 1, sizeof(ListElem));
@@ -191,14 +158,14 @@ int ListLinerization(List* list)
 
     if (list->capacity != list->size)
     {
-        list->free = list->capacity;
-        for(int i = list->capacity; i > list->size + 1; i--)
-        {
-            list->data[i].prev = i + 1;
-            list->data[i].next = -1;
-        }
-        list->data[list->size + 1].prev = -1;
+        list->free = list->size + 1 ;
         list->data[list->size + 1].next = -1;
+        for(int i = list->size + 2; i <= list->capacity; i++)
+        {
+            list->data[i - 1].prev = i;
+            list->data[i].next     = -1;
+            list->data[i].prev     = -1;
+        }
     }
 
     list->linerized = true;
@@ -241,11 +208,11 @@ void GraphicDump(List* list)
     sprintf(name, "GraphicDumps/dump%d", GRAPHIC_DUMP_CNT);
     FILE* fp = fopen(name, "w");
 
-    fprintf(fp, "digraph{\n");
-    fprintf(fp, "rankdir=LR;\n"                                 \
-                "node[shape = record, fontsize=14];\n"          \
-                "edge[style = invis, constraint = true]\n"             \
-                "splines=spline\n");
+    fprintf(fp, "digraph G{\n");
+    fprintf(fp, "rankdir = LR;\n"                                 \
+                "node[shape = record, fontsize = 14];\n"          \
+                );
+                //"splines = polyline\n"
 
     if (list == nullptr || list == POISON_PTR) 
         return;
@@ -256,36 +223,51 @@ void GraphicDump(List* list)
 
     for(int i = 0; i <= list->capacity; i++)
     {
-        fprintf(fp, "Node%d[label = \"<v>%d \\n | {<p> %d |<n>  %d}\"]\n", i, list->data[i].val, list->data[i].prev, list->data[i].next);
+        if (i == 0)
+            fprintf(fp, "Node%d[style=filled, fillcolor = white, label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
+        else if (list->data[i].next == -1 || list->data[i].prev == -1)
+            fprintf(fp, "Node%d[style=filled, fillcolor = \"#B1FF9F\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
+        else
+            fprintf(fp, "Node%d[style=filled, fillcolor = \"#8F9EFF\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+                          i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
+
+
+    }
+    
+    fprintf(fp, "edge[style=\"invis\"]\n");
+    for(int i = 0; i <= list->capacity; i++)
+    {
         if (i == 0)
             fprintf(fp, "info:s -> Node0:v:n\n");
         else 
-            fprintf(fp, "Node%d->Node%d\n", i - 1, i);
+            fprintf(fp, "Node%d:v:e->Node%d:v:w\n", i - 1, i);
     }
 
     int index = 0;
-    fprintf(fp, "edge [style = solid, color = \"red\", constraint = false]\n");
+    fprintf(fp, "edge [style=\"solid\", color = \"red\", constraint=false]\n");
     for(int i = 0; i <= list->size; i++)
     {
         int prev = list->data[index].prev;
-        fprintf(fp, "Node%d:<p> -> Node%d\n", index, prev);
+        fprintf(fp, "Node%d:<p> -> Node%d:s\n", index, prev);
         index = prev;
         if (index == 0)
             break;
     }
     
-    fprintf(fp, "edge [style = solid, color = \"blue\", constraint = false]\n");
+    fprintf(fp, "edge [color = \"blue\", constraint=false]\n");
     index = 0;
     for(int i = 0; i <= list->size; i++)
     {
         int next = list->data[index].next;
-        fprintf(fp, "Node%d:<n> -> Node%d\n", index, next);
+        fprintf(fp, "Node%d:<i> -> Node%d:<i>:n\n", index, next);
         index = next;
         if (index == 0)
             break;
     }
 
-    fprintf(fp, "edge [style = solid, color = \"black\", constraint = false]\n");
+    fprintf(fp, "edge [color = \"black\", constraint=false]\n");
     index = list->free;
     if (index != -1)
     {
@@ -307,6 +289,11 @@ void GraphicDump(List* list)
     char comand[50] = "";
     sprintf(comand, COMAND_PROTOTYPE, GRAPHIC_DUMP_CNT, GRAPHIC_DUMP_CNT);
     system(comand);
+    
+    char path[50] = "";
+    LogPrintf("<hr>");
+    LogPrintf("<img src=\"GraphicDumps/Dump%d.png\">\n", GRAPHIC_DUMP_CNT);
+    LogPrintf("<hr>");
 
     GRAPHIC_DUMP_CNT++;
 }
@@ -451,7 +438,7 @@ int FindFree(List* list, int* index)
     return 0;
 }
 
-int ListPop(List* list, int index)
+int ListRemove(List* list, int index)
 {
     ReturnIfError(ListCheck(list));
 
@@ -474,7 +461,6 @@ int ListPop(List* list, int index)
     list->data[index].prev = list->free;
     list->data[index].next = -1;
 
-    list->data[list->free].next = list->free;
     list->free = index;
  
     list->size--;

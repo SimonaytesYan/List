@@ -20,33 +20,59 @@ int main()
     printf("Start\n");
 
     List list = {};
-    ListCtor(&list, 0);
+    ListCtor(&list, 3);
+    LogPrintf("<h2> Лист создан, capacity = 3</h2>\n");
+    GraphicDump(&list);
 
     ListInsert(&list, 100, 0);
+    LogPrintf("<h2> Insert 100 после нулевого\n");
+    GraphicDump(&list);
+
     int index = 0;
     ListEnd(&list, &index);
     ListInsert(&list, 200, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 300, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 400, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 500, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 600, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 700, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 800, index);
-    ListEnd(&list, &index);
-    ListInsert(&list, 900, index);
-
-    
-    ListLinerization(&list);
-    
+    LogPrintf("<h2> Insert 200 после последнего\n");
     GraphicDump(&list);
 
-    ListSwap(&list, 1, 5);
+    ListInsert(&list, 300, 1);
+    LogPrintf("<h2> Insert 300 после первого\n");
+    GraphicDump(&list);
+    
+    ListInsert(&list, 400, 1);
+    LogPrintf("<h2> Insert 400 после первого\n");
+    GraphicDump(&list);
+    
+    ListInsert(&list, 500, 1);
+    LogPrintf("<h2> Insert 500 после первого\n");
+    GraphicDump(&list);
+
+    ListRemove(&list, 4);
+    
+    ReturnIfError( ListLinerization(&list));
+    LogPrintf("<h2> Линеризация\n");
+    GraphicDump(&list);
+
+    ListRemove(&list, 1);
+    LogPrintf("<h2> Remove 1-го элемента\n");
+    GraphicDump(&list);
+
+    ListRemove(&list, 3);
+    LogPrintf("<h2> Remove 3-го элемента\n");
+    GraphicDump(&list);
+
+    ReturnIfError( ListLinerization(&list));
+    LogPrintf("<h2> Линеризация\n");
+    GraphicDump(&list);
+    
+    ListRemove(&list, 1);
+    LogPrintf("<h2> Remove 1-го элемента\n");
+    GraphicDump(&list);
+    
+    ListRemove(&list, 2);
+    LogPrintf("<h2> Remove 2-го элемента\n");
+    GraphicDump(&list);
+
+    ListRemove(&list, 1);
     GraphicDump(&list);
 
     printf("End\n");
