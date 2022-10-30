@@ -65,7 +65,6 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
-
 //!-----------------------
 //!Not iterate if index  indicates to the end of the list
 //!index will be -1 if there isn`t next element in list
@@ -86,7 +85,7 @@ int ListLinerization(List* list);
 //!@return Error code according to Errors.h
 //!
 //!---------------------
-int PhysIndexToLogical(List* list, int phys_index, int* log_index);
+int LogicalIndexToPhys(List* list, int phys_index, int* log_index);
 
 int ListIterate(List* list, int* index)
 {
@@ -173,31 +172,28 @@ int ListLinerization(List* list)
     return 0;
 }
 
-int PhysIndexToLogical(List* list, int phys_index, int* log_index)
+int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
 {
     ReturnIfError(ListCheck(list));
 
+    CHECK(physic_index == nullptr, "Pointer to physic index = nullptr", -1);
+
     if (list->linerized)
     {
-        *log_index = phys_index - 1;
+        *physic_index = logic_index + 1;
         return 0;
     }
+
     int index = 0;
-    *log_index = -1;
-    for(int i = 0; i < list->size; i++)
+    *physic_index = -1;
+
+    for(int i = 0; i < logic_index; i++)
     {
         ListIterate(list, &index);
-        if (index == -1)
-        {
-            LogPrintf("Element in physical index %d not found\n", phys_index);
-            return 0;
-        }
-        if (index == phys_index)
-        {
-            *log_index = i;
-            break;
-        }
+        CHECK(index == -1, "Element not found\n", 0);
     }
+
+    *physic_index = index;
     
     return 0;
 }
@@ -209,34 +205,36 @@ void GraphicDump(List* list)
     FILE* fp = fopen(name, "w");
 
     fprintf(fp, "digraph G{\n");
-    fprintf(fp, "rankdir = LR;\n"                                 \
-                "node[shape = record, fontsize = 14];\n"          \
-                );
-                //"splines = polyline\n"
+    fprintf(fp, "rankdir = LR;\n");
+    fprintf(fp, "node[shape = record, fontsize = 14, style=filled];\n");
+    fprintf(fp, "splines = ortho\n");
 
-    if (list == nullptr || list == POISON_PTR) 
-        return;
-    if (list->data == nullptr || list->data == POISON_PTR)
-        return;
+    CHECK(list == nullptr || list == POISON_PTR, "Pointer to list = null or poison", (void)0);
+    CHECK(list->data == nullptr || list->data == POISON_PTR, "Pointer to list data = null or poison", (void)0);
 
-    fprintf(fp, "info[label = \"size = %d\\n | capasity = %d \\n | <f> free = %d \\n | linerized = %d \\n \"]\n", list->size, list->capacity, list->free, list->linerized);
+    fprintf(fp, "info[label = \"size = %d\\n |"         \
+                               "capasity = %d \\n |"    \
+                               "<f> free = %d \\n |"    \
+                               "linerized = %d \\n \"]\n",
+                               list->size, 
+                               list->capacity, 
+                               list->free, 
+                               list->linerized);
 
     for(int i = 0; i <= list->capacity; i++)
     {
         if (i == 0)
-            fprintf(fp, "Node%d[style=filled, fillcolor = white, label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+            fprintf(fp, "Node%d[fillcolor = white, label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
                           i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
         else if (list->data[i].next == -1 || list->data[i].prev == -1)
-            fprintf(fp, "Node%d[style=filled, fillcolor = \"#B1FF9F\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+            fprintf(fp, "Node%d[fillcolor = \"#B1FF9F\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
                           i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
         else
-            fprintf(fp, "Node%d[style=filled, fillcolor = \"#8F9EFF\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
+            fprintf(fp, "Node%d[fillcolor = \"#8F9EFF\", label = \"<i>%d \\n | <v>%d \\n | {<p> %d |<n>  %d}\"]\n", 
                           i,              i,    list->data[i].val, list->data[i].prev, list->data[i].next);
-
-
     }
     
-    fprintf(fp, "edge[style=\"invis\"]\n");
+    fprintf(fp, "edge[weight = 1000, style=\"invis\"]\n");
     for(int i = 0; i <= list->capacity; i++)
     {
         if (i == 0)
@@ -246,40 +244,48 @@ void GraphicDump(List* list)
     }
 
     int index = 0;
-    fprintf(fp, "edge [style=\"solid\", color = \"red\", constraint=false]\n");
-    for(int i = 0; i <= list->size; i++)
-    {
-        int prev = list->data[index].prev;
-        fprintf(fp, "Node%d:<p> -> Node%d:s\n", index, prev);
-        index = prev;
-        if (index == 0)
-            break;
-    }
     
-    fprintf(fp, "edge [color = \"blue\", constraint=false]\n");
+    fprintf(fp, "edge [color = \"blue\", style=\"solid\"]\n");
     index = 0;
     for(int i = 0; i <= list->size; i++)
     {
         int next = list->data[index].next;
-        fprintf(fp, "Node%d:<i> -> Node%d:<i>:n\n", index, next);
+
+        fprintf(fp, "Node%d -> Node%d\n", index, next);
+
         index = next;
         if (index == 0)
             break;
     }
 
-    fprintf(fp, "edge [color = \"black\", constraint=false]\n");
+    fprintf(fp, "edge [color = \"black\", style=\"solid\"]\n");
     index = list->free;
     if (index != -1)
     {
-        fprintf(fp, "info:<f> -> Node%d\n", index);
+        fprintf(fp, "info:<f>:e -> Node%d\n", index);
         for(int i = 0; i <= list->capacity; i++)    
         {
             int free_ind = list->data[index].prev;
             if (free_ind == -1)
                 break;
+
             fprintf(fp, "Node%d -> Node%d\n", index, free_ind);
+
             index = free_ind;
         }
+    }
+
+    index = 0;
+    fprintf(fp, "edge [constraint=false, color = \"red\"]\n");
+    for(int i = 0; i <= list->size; i++)
+    {
+        int prev = list->data[index].prev;
+
+        fprintf(fp, "Node%d -> Node%d\n", index, prev);
+
+        index = prev;
+        if (index == 0)
+            break;
     }
 
     fprintf(fp, "}");

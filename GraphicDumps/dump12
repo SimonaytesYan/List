@@ -1,15 +1,16 @@
 digraph G{
 rankdir = LR;
-node[shape = record, fontsize = 14];
-info[label = "size = 0\n | capasity = 6 \n | <f> free = 2 \n | linerized = 0 \n "]
-Node0[style=filled, fillcolor = white, label = "<i>0 \n | <v>0 \n | {<p> 0 |<n>  0}"]
-Node1[style=filled, fillcolor = "#B1FF9F", label = "<i>1 \n | <v>2147483647 \n | {<p> 3 |<n>  -1}"]
-Node2[style=filled, fillcolor = "#B1FF9F", label = "<i>2 \n | <v>2147483647 \n | {<p> 1 |<n>  -1}"]
-Node3[style=filled, fillcolor = "#B1FF9F", label = "<i>3 \n | <v>0 \n | {<p> 4 |<n>  -1}"]
-Node4[style=filled, fillcolor = "#B1FF9F", label = "<i>4 \n | <v>0 \n | {<p> 5 |<n>  -1}"]
-Node5[style=filled, fillcolor = "#B1FF9F", label = "<i>5 \n | <v>0 \n | {<p> 6 |<n>  -1}"]
-Node6[style=filled, fillcolor = "#B1FF9F", label = "<i>6 \n | <v>0 \n | {<p> -1 |<n>  -1}"]
-edge[style="invis"]
+node[shape = record, fontsize = 14, style=filled];
+splines = ortho
+info[label = "size = 0\n |capasity = 6 \n |<f> free = 2 \n |linerized = 0 \n "]
+Node0[fillcolor = white, label = "<i>0 \n | <v>0 \n | {<p> 0 |<n>  0}"]
+Node1[fillcolor = "#B1FF9F", label = "<i>1 \n | <v>2147483647 \n | {<p> 3 |<n>  -1}"]
+Node2[fillcolor = "#B1FF9F", label = "<i>2 \n | <v>2147483647 \n | {<p> 1 |<n>  -1}"]
+Node3[fillcolor = "#B1FF9F", label = "<i>3 \n | <v>0 \n | {<p> 4 |<n>  -1}"]
+Node4[fillcolor = "#B1FF9F", label = "<i>4 \n | <v>0 \n | {<p> 5 |<n>  -1}"]
+Node5[fillcolor = "#B1FF9F", label = "<i>5 \n | <v>0 \n | {<p> 6 |<n>  -1}"]
+Node6[fillcolor = "#B1FF9F", label = "<i>6 \n | <v>0 \n | {<p> -1 |<n>  -1}"]
+edge[weight = 1000, style="invis"]
 info:s -> Node0:v:n
 Node0:v:e->Node1:v:w
 Node1:v:e->Node2:v:w
@@ -17,15 +18,15 @@ Node2:v:e->Node3:v:w
 Node3:v:e->Node4:v:w
 Node4:v:e->Node5:v:w
 Node5:v:e->Node6:v:w
-edge [style="solid", color = "red", constraint=false]
-Node0:<p> -> Node0:s
-edge [color = "blue", constraint=false]
-Node0:<i> -> Node0:<i>:n
-edge [color = "black", constraint=false]
-info:<f> -> Node2
+edge [color = "blue", style="solid"]
+Node0 -> Node0
+edge [color = "black", style="solid"]
+info:<f>:e -> Node2
 Node2 -> Node1
 Node1 -> Node3
 Node3 -> Node4
 Node4 -> Node5
 Node5 -> Node6
+edge [constraint=false, color = "red"]
+Node0 -> Node0
 }
