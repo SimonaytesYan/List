@@ -178,9 +178,10 @@ int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
 
     CHECK(physic_index == nullptr, "Pointer to physic index = nullptr", -1);
 
+    logic_index++;
     if (list->linerized)
     {
-        *physic_index = logic_index + 1;
+        *physic_index = logic_index;
         return 0;
     }
 

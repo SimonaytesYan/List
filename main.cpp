@@ -21,7 +21,33 @@ int main()
 
     List list = {};
     ListCtor(&list, 3);
-    LogPrintf("<h2> Лист создан, capacity = 3</h2>\n");
+
+    ListInsert(&list, 100, 0, nullptr);
+    ListInsert(&list, 200, 1, nullptr);
+    ListInsert(&list, 300, 0, nullptr);
+    ListInsert(&list, 400, 2, nullptr);
+
+    GraphicDump(&list);
+
+    for(int i = 0; i < 4; i++)
+    {
+        int index = 0;
+        LogicalIndexToPhys(&list, i, &index);
+        printf("[%d] = %d\n", i, index);
+    }
+
+    ListLinerization(&list);
+    GraphicDump(&list);
+
+    printf("\n");
+    for(int i = 0; i < 4; i++)
+    {
+        int index = 0;
+        LogicalIndexToPhys(&list, i, &index);
+        printf("[%d] = %d\n", i, index);
+    }
+
+    /*LogPrintf("<h2> Лист создан, capacity = 3</h2>\n");
     GraphicDump(&list);
 
     ListInsert(&list, 100, 0);
@@ -73,7 +99,7 @@ int main()
     GraphicDump(&list);
 
     ListRemove(&list, 1);
-    GraphicDump(&list);
+    GraphicDump(&list);*/
 
     printf("End\n");
     CloseHtmlLogFile();
