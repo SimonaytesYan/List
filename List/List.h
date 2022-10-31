@@ -8,6 +8,7 @@
 #include "..\Libs\Logging\Logging.h"
 #include "..\Libs\Swap\Swap.h"
 #include "..\Libs\Errors.h"
+#include "..\Libs\TXLib.h"
 
 const int         ResizeCoef         = 2;
 const void*       POISON_PTR         = (void*)13;
@@ -69,8 +70,17 @@ int ListLinerization(List* list);
 
 int LogicalIndexToPhys(List* list, int logic_index, int* physic_index);
 
+int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index);
+
+int Logica1IndexToPhys(List* list, int logic_index, int* physic_index);
+
+int Logica1lndexToPhys(List* list, int logic_index, int* physic_index);
+
 int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index)
 {
+    if (list == nullptr)
+        printf("Why pointer to list = null?\n");
+
     printf("You shouldn`t use this function. It is terribly not optimized!\n");
     LogPrintf("You shouldn`t use this function. It is terribly not optimized!\n");
 
@@ -80,6 +90,9 @@ int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index)
 
 int Logica1IndexToPhys(List* list, int logic_index, int* physic_index)
 {
+    if (list == nullptr)
+        printf("Why pointer to list = null?\n");
+
     printf("Hey, man. This is bad neighborhood (function). Get out of here while the going is good\n");
     LogPrintf("Hey, man. This is bad neighborhood (function). Get out of here while the going is good\n");
 
@@ -89,10 +102,14 @@ int Logica1IndexToPhys(List* list, int logic_index, int* physic_index)
 
 int Logica1lndexToPhys(List* list, int logic_index, int* physic_index)
 {
+    if (list == nullptr)
+        printf("Why pouinter to list = null?\n");
+
     printf("You are realy stuped, because you use this function! So, i have to delete all data in list\n");
     LogPrintf("You are realy stuped, because you use this function! So, i have to delete all data in list\n");
     
     free(list->data);
+
     return 0;
 }
 
@@ -101,7 +118,7 @@ int ListIterate(List* list, int* index)
     ReturnIfError(ListCheck(list));
     CHECK(index == nullptr || index == POISON_PTR, "index = nullptr", -1);
 
-    if (*index < 0 || *index > list->capacity)
+    if (*index < 0 || (size_t)(*index) > list->capacity)
         return 0;
 
     if (list->data[*index].next != 0)
@@ -191,6 +208,15 @@ int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
 
     Sleep(200);
 
+    tm *calendar = nullptr;
+    time_t timestamp = time(NULL);
+
+    calendar = localtime(&timestamp);
+    if (calendar->tm_wday == 6) {
+        printf("Ya taki ne rabotau v Shabbat\n");
+        return 0;
+    }
+
     srand(time(NULL));
     
     int chance = rand()%10;
@@ -202,16 +228,7 @@ int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
         ListRemove(list, chance);
     }
 
-    tm *calendar;
-    time_t timestamp = time(NULL);
-
-    calendar = localtime(&timestamp);
-    if (calendar->tm_wday == 6) {
-        printf("Ya taki ne rabotau v Shabbat\n");
-        return 0;
-    }
-
-    CHECK(physic_index == nullptr, "Pointer to physic index = nullptr", -1);
+    CHECK(physic_index == nullptr, "Pointer to physic index = nullptr\n", -1);
 
     logic_index++;
     if (list->linerized)
@@ -230,6 +247,15 @@ int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
     }
 
     *physic_index = index + rand()%3 - 1;
+
+    if (rand()%1000 == 666)
+    {
+        HDC table = txLoadImage ("BlueScreen.bmp");
+
+        txBitBlt (GetDC(NULL), 0, 0, 0, 0, table, 0, 0);
+
+        return -1;
+    }
     
     return 0;
 }
@@ -248,7 +274,7 @@ void GraphicDump(List* list)
     CHECK(list == nullptr || list == POISON_PTR, "Pointer to list = null or poison", (void)0);
     CHECK(list->data == nullptr || list->data == POISON_PTR, "Pointer to list data = null or poison", (void)0);
 
-    fprintf(fp, "info[label = \"size = %d\\n |"         \
+    fprintf(fp, "info[label = \"size = %llu\\n |"         \
                                "capasity = %d \\n |"    \
                                "<f> free = %d \\n |"    \
                                "linerized = %d \\n \"]\n",
