@@ -70,5 +70,5 @@ int LogPrintf(const char *format, ...)
     va_end(args);
     fflush(logs_file);
 
-    return NO_ERROR;
+    return NO_ERRORS;
 }

@@ -33,7 +33,7 @@ int  LogPrintf(const char *format, ...);
 #define ReturnIfError(func)                 \
     {                                       \
         int error = func;                   \
-        if (error != NO_ERROR)              \
+        if (error != NO_ERRORS)              \
             return error;                   \
     }
 

@@ -2,6 +2,8 @@
 #define __SYM_LIST__
 
 #include <stdlib.h>
+#include <time.h>
+#include <windows.h>
 
 #include "..\Libs\Logging\Logging.h"
 #include "..\Libs\Swap\Swap.h"
@@ -49,14 +51,6 @@ void DumpList(List* list, const char* function, const char* file, int line);
 
 void GraphicDump(List* list);
 
-//!---------------------
-//!@param [in]  list        List for inserting an element
-//!@param [in]  val         Value of new element
-//!@param [in]  after_which Index of element after which put new element
-//!@param [out] index       (Optional).Index in which new element will insert
-//!@return Error code according to Errors.h
-//!
-//!---------------------
 int ListInsert(List* list, int value, int after_which, int* index = nullptr);
 
 int ListRemove(List* list, int index);
@@ -65,11 +59,6 @@ int FindFree(List* list, int* index);
 
 int ResizeUp(List* list, int new_capacity);
 
-//!-----------------------
-//!Not iterate if index  indicates to the end of the list
-//!index will be -1 if there isn`t next element in list
-//!
-//!-----------------------
 int ListIterate(List* list, int* index);
 
 int ListBegin(List* list, int *index);
@@ -78,14 +67,34 @@ int ListEnd(List* list, int *index);
 
 int ListLinerization(List* list);
 
-//!---------------------
-//!@param [in]  list        List for searching logical index from physical
-//!@param [in]  phys_index  Physical index
-//!@param [out] log_index   Logical index of element(-1 if element not found)
-//!@return Error code according to Errors.h
-//!
-//!---------------------
-int LogicalIndexToPhys(List* list, int phys_index, int* log_index);
+int LogicalIndexToPhys(List* list, int logic_index, int* physic_index);
+
+int LogicaIlndexToPhys(List* list, int logic_index, int* physic_index)
+{
+    printf("You shouldn`t use this function. It is terribly not optimized!\n");
+    LogPrintf("You shouldn`t use this function. It is terribly not optimized!\n");
+
+    abort();
+    return -1;
+}
+
+int Logica1IndexToPhys(List* list, int logic_index, int* physic_index)
+{
+    printf("Hey, man. This is bad neighborhood (function). Get out of here while the going is good\n");
+    LogPrintf("Hey, man. This is bad neighborhood (function). Get out of here while the going is good\n");
+
+    abort();
+    return -1;
+}
+
+int Logica1lndexToPhys(List* list, int logic_index, int* physic_index)
+{
+    printf("You are realy stuped, because you use this function! So, i have to delete all data in list\n");
+    LogPrintf("You are realy stuped, because you use this function! So, i have to delete all data in list\n");
+    
+    free(list->data);
+    return 0;
+}
 
 int ListIterate(List* list, int* index)
 {
@@ -149,6 +158,7 @@ int ListLinerization(List* list)
             new_data[i + 1].next = i + 2;
         new_data[i + 1].prev = i;
     }
+
     new_data[0].next = 1;
     new_data[0].prev = list->size;
 
@@ -174,7 +184,32 @@ int ListLinerization(List* list)
 
 int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
 {
-    ReturnIfError(ListCheck(list));
+    ReturnIfError(ListCheck(list));   
+
+    printf("You are lucky! This is right function, but...\n");
+    LogPrintf("You are lucky! This is right function, but...\n");
+
+    Sleep(200);
+
+    srand(time(NULL));
+    
+    int chance = rand()%10;
+
+    if (chance == 7)
+    {
+        chance = rand()%list->capacity + 1;
+        printf("AHAHAHAHHAHAHAH!!!\n");
+        ListRemove(list, chance);
+    }
+
+    tm *calendar;
+    time_t timestamp = time(NULL);
+
+    calendar = localtime(&timestamp);
+    if (calendar->tm_wday == 6) {
+        printf("Ya taki ne rabotau v Shabbat\n");
+        return 0;
+    }
 
     CHECK(physic_index == nullptr, "Pointer to physic index = nullptr", -1);
 
@@ -194,7 +229,7 @@ int LogicalIndexToPhys(List* list, int logic_index, int* physic_index)
         CHECK(index == -1, "Element not found\n", 0);
     }
 
-    *physic_index = index;
+    *physic_index = index + rand()%3 - 1;
     
     return 0;
 }

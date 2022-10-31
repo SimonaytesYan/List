@@ -5,7 +5,7 @@ const int ERRORS_NUMBER = 12;
 
 enum ErrorCodes
 {
-    NO_ERROR                = 0,
+    NO_ERRORS                = 0,
     NULL_LIST_POINTER       = 1<<0,
     MEMORY_ALLOCATION_ERROR = 1<<1,
     ERROR_LOGS_OPEN         = 1<<2,
